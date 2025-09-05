@@ -49,6 +49,7 @@ export default function ImageDashboard() {
       // Ensure we have a valid array
       if (Array.isArray(imageList)) {
         setImages(imageList);
+        // Only show "no images" message if we actually got an empty response
         if (imageList.length === 0) {
           toast.info('No images found. Upload some images to get started!');
         }

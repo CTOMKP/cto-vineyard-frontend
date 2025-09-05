@@ -25,14 +25,15 @@ export default function Home() {
   const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch if we haven't attempted to fetch yet, or if we have no images and aren't loading
-    if (!hasAttemptedFetch || (images.length === 0 && !loading)) {
+    // Only fetch if we haven't attempted to fetch yet
+    if (!hasAttemptedFetch) {
       const fetchImages = async () => {
         try {
           setLoading(true);
           setHasAttemptedFetch(true);
           const imageList = await getImages();
           setImages(imageList);
+          // Only show "no images" message if we actually got an empty response
           if (imageList.length === 0) {
             toast.info('No images available. Check back later!');
           }
@@ -47,7 +48,7 @@ export default function Home() {
 
       fetchImages();
     }
-  }, [getImages, setImages, setLoading, setHasAttemptedFetch, images.length, loading, hasAttemptedFetch]);
+  }, [getImages, setImages, setLoading, setHasAttemptedFetch, hasAttemptedFetch]);
 
   const handleSearch = useCallback(
     (term: string) => {
