@@ -23,27 +23,29 @@ export default function Home() {
   const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Always fetch fresh data on component mount
-    const fetchImages = async () => {
-      try {
-        setLoading(true);
-        const imageList = await getImages();
-        setImages(imageList);
-        // Only show "no images" message if we actually got an empty response
-        if (imageList.length === 0) {
-          toast.info('No images available. Check back later!');
+    // Only fetch if we don't have images already (prevents tab-switch refresh)
+    if (images.length === 0 && !loading) {
+      const fetchImages = async () => {
+        try {
+          setLoading(true);
+          const imageList = await getImages();
+          setImages(imageList);
+          // Only show "no images" message if we actually got an empty response
+          if (imageList.length === 0) {
+            toast.info('No images available. Check back later!');
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
+          console.error("Failed to load images:", error);
+          toast.error(`Failed to load images: ${errorMessage}`);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
-        console.error("Failed to load images:", error);
-        toast.error(`Failed to load images: ${errorMessage}`);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchImages();
-  }, [getImages, setImages, setLoading]);
+      fetchImages();
+    }
+  }, [getImages, setImages, setLoading, images.length, loading]);
 
   const handleSearch = useCallback(
     (term: string) => {

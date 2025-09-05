@@ -66,11 +66,11 @@ export default function ImageDashboard() {
   }, [getImages, setImages, setLoading]);
 
   useEffect(() => {
-    // Always fetch fresh data when authenticated
-    if (isAuthenticated) {
+    // Only fetch if authenticated and we don't have images already (prevents tab-switch refresh)
+    if (isAuthenticated && images.length === 0 && !loadingImages) {
       loadImages();
     }
-  }, [isAuthenticated, loadImages]);
+  }, [isAuthenticated, loadImages, images.length, loadingImages]);
 
   // Search functionality with useCallback for performance
   const handleSearch = useCallback((term: string) => {

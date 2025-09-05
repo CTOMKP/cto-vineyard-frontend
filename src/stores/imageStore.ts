@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 
 export interface ImageData {
   id: string;
@@ -38,7 +38,8 @@ interface ImageState {
 
 export const useImageStore = create<ImageState>()(
   devtools(
-    (set, get) => ({
+    persist(
+      (set, get) => ({
       images: [],
       filteredImages: [],
       searchTerm: '',
@@ -128,9 +129,31 @@ export const useImageStore = create<ImageState>()(
         const { images } = get();
         set({ searchTerm: '', filteredImages: images });
       },
-    }),
+      }),
+      {
+        name: 'image-store',
+        // Only persist images and searchTerm, not loading states
+        partialize: (state) => ({
+          images: state.images,
+          searchTerm: state.searchTerm,
+        }),
+        // Use sessionStorage instead of localStorage for tab persistence only
+        storage: {
+          getItem: (name) => {
+            const str = sessionStorage.getItem(name);
+            return str ? JSON.parse(str) : null;
+          },
+          setItem: (name, value) => {
+            sessionStorage.setItem(name, JSON.stringify(value));
+          },
+          removeItem: (name) => {
+            sessionStorage.removeItem(name);
+          },
+        },
+      }
+    ),
     {
-      name: 'image-store',
+      name: 'image-store-devtools',
     }
   )
 );
