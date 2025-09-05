@@ -15,40 +15,35 @@ export default function Home() {
     filteredImages, 
     searchTerm, 
     loading, 
-    hasAttemptedFetch,
     setImages, 
     setLoading, 
-    setHasAttemptedFetch,
     searchImages 
   } = useImageStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Only fetch if we haven't attempted to fetch yet
-    if (!hasAttemptedFetch) {
-      const fetchImages = async () => {
-        try {
-          setLoading(true);
-          setHasAttemptedFetch(true);
-          const imageList = await getImages();
-          setImages(imageList);
-          // Only show "no images" message if we actually got an empty response
-          if (imageList.length === 0) {
-            toast.info('No images available. Check back later!');
-          }
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
-          console.error("Failed to load images:", error);
-          toast.error(`Failed to load images: ${errorMessage}`);
-        } finally {
-          setLoading(false);
+    // Always fetch fresh data on component mount
+    const fetchImages = async () => {
+      try {
+        setLoading(true);
+        const imageList = await getImages();
+        setImages(imageList);
+        // Only show "no images" message if we actually got an empty response
+        if (imageList.length === 0) {
+          toast.info('No images available. Check back later!');
         }
-      };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
+        console.error("Failed to load images:", error);
+        toast.error(`Failed to load images: ${errorMessage}`);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchImages();
-    }
-  }, [getImages, setImages, setLoading, setHasAttemptedFetch, hasAttemptedFetch]);
+    fetchImages();
+  }, [getImages, setImages, setLoading]);
 
   const handleSearch = useCallback(
     (term: string) => {

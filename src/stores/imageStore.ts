@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { devtools } from 'zustand/middleware';
 
 export interface ImageData {
   id: string;
@@ -20,7 +20,6 @@ interface ImageState {
   searchTerm: string;
   loading: boolean;
   uploading: boolean;
-  hasAttemptedFetch: boolean;
   
   // Actions
   setImages: (images: ImageData[]) => void;
@@ -31,7 +30,6 @@ interface ImageState {
   setFilteredImages: (images: ImageData[]) => void;
   setLoading: (loading: boolean) => void;
   setUploading: (uploading: boolean) => void;
-  setHasAttemptedFetch: (attempted: boolean) => void;
   
   // Computed actions
   searchImages: (term: string) => void;
@@ -40,14 +38,12 @@ interface ImageState {
 
 export const useImageStore = create<ImageState>()(
   devtools(
-    persist(
-      (set, get) => ({
+    (set, get) => ({
       images: [],
       filteredImages: [],
       searchTerm: '',
       loading: false,
       uploading: false,
-      hasAttemptedFetch: false,
 
       setImages: (images) => {
         set({ images, filteredImages: images });
@@ -109,10 +105,6 @@ export const useImageStore = create<ImageState>()(
         set({ uploading });
       },
 
-      setHasAttemptedFetch: (attempted) => {
-        set({ hasAttemptedFetch: attempted });
-      },
-
       searchImages: (term) => {
         const { images } = get();
         
@@ -136,19 +128,9 @@ export const useImageStore = create<ImageState>()(
         const { images } = get();
         set({ searchTerm: '', filteredImages: images });
       },
-      }),
-      {
-        name: 'image-store',
-        // Only persist images and searchTerm, not loading states
-        partialize: (state) => ({
-          images: state.images,
-          searchTerm: state.searchTerm,
-          hasAttemptedFetch: state.hasAttemptedFetch,
-        }),
-      }
-    ),
+    }),
     {
-      name: 'image-store-devtools',
+      name: 'image-store',
     }
   )
 );
