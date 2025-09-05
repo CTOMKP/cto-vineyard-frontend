@@ -65,10 +65,10 @@ export default function ImageDashboard() {
   }, [getImages, setImages, setLoading]);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && images.length === 0 && !loadingImages) {
       loadImages();
     }
-  }, [isAuthenticated, loadImages]);
+  }, [isAuthenticated, loadImages, images.length, loadingImages]);
 
   // Search functionality with useCallback for performance
   const handleSearch = useCallback((term: string) => {
@@ -193,8 +193,14 @@ export default function ImageDashboard() {
     if (!editingImage) return;
 
     try {
-      await editImage(editingImage.id, editForm);
-      updateImage(editingImage.id, editForm);
+      // Transform fileName to originalName for API
+      const apiData = {
+        originalName: editForm.fileName,
+        description: editForm.description,
+        category: editForm.category
+      };
+      await editImage(editingImage.id, apiData);
+      updateImage(editingImage.id, apiData);
       toast.success('Image updated successfully!');
       
       setEditingImage(null);
@@ -462,7 +468,7 @@ export default function ImageDashboard() {
                 <input
                   type="text"
                   value={editForm.fileName}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, originalName: e.target.value }))}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, fileName: e.target.value }))}
                   className="w-full px-3 py-2 bg-[#262626] border border-[#404040] rounded text-white placeholder-white/50 focus:outline-none focus:border-blue-500"
                   placeholder="Image name"
                 />

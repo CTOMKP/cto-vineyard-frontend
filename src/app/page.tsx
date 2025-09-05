@@ -20,27 +20,31 @@ export default function Home() {
     searchImages 
   } = useImageStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        setLoading(true);
-        const imageList = await getImages();
-        setImages(imageList);
-        if (imageList.length === 0) {
-          toast.info('No images available. Check back later!');
+    // Only fetch if we don't have images already
+    if (images.length === 0 && !loading) {
+      const fetchImages = async () => {
+        try {
+          setLoading(true);
+          const imageList = await getImages();
+          setImages(imageList);
+          if (imageList.length === 0) {
+            toast.info('No images available. Check back later!');
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
+          console.error("Failed to load images:", error);
+          toast.error(`Failed to load images: ${errorMessage}`);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
-        console.error("Failed to load images:", error);
-        toast.error(`Failed to load images: ${errorMessage}`);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchImages();
-  }, [getImages, setImages, setLoading]);
+      fetchImages();
+    }
+  }, [getImages, setImages, setLoading, images.length, loading]);
 
   const handleSearch = useCallback(
     (term: string) => {
@@ -63,6 +67,7 @@ export default function Home() {
 
   const handleDownload = useCallback(async (image: ImageData) => {
     try {
+      setDownloadingImageId(image.id);
       const blob = await downloadImage(image.id);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -76,6 +81,8 @@ export default function Home() {
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download image');
+    } finally {
+      setDownloadingImageId(null);
     }
   }, [downloadImage]);
 
@@ -131,7 +138,7 @@ export default function Home() {
 
       {/* Images Grid */}
       <div className="flex justify-center">
-        <div className="grid grid-cols-1 w-full sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4  2xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4  2xl:grid-cols-5 gap-4">
           {filteredImages.map((image) => (
             <div
               key={image.id}
@@ -155,10 +162,15 @@ export default function Home() {
                       e.stopPropagation();
                       handleDownload(image);
                     }}
-                    className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
-                    title="Download image"
+                    disabled={downloadingImageId === image.id}
+                    className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={downloadingImageId === image.id ? "Downloading..." : "Download image"}
                   >
-                    <Download size={16} className="text-white" />
+                    {downloadingImageId === image.id ? (
+                      <MoonLoader size={16} color="#FFFFFF" />
+                    ) : (
+                      <Download size={16} className="text-white" />
+                    )}
                   </button>
                 </div>
                 <span className="text-white text-sm truncate">
