@@ -8,31 +8,28 @@ import { Search, Upload, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
-
-interface ImageData {
-  id: string;
-  url: string;
-  originalName: string;
-  size: number;
-  uploadDate: string;
-  filename?: string;
-  mimeType?: string;
-  path?: string;
-  description?: string;
-  category?: string;
-}
+import { useImageStore, ImageData } from '../../stores/imageStore';
 
 export default function ImageDashboard() {
   const { data: session, status } = useSession();
   const { uploadImage, deleteImage, getImages, editImage, isAuthenticated } = useApi();
-  const [images, setImages] = useState<ImageData[]>([]);
-  const [filteredImages, setFilteredImages] = useState<ImageData[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const { 
+    images, 
+    filteredImages, 
+    searchTerm, 
+    loading: loadingImages, 
+    uploading, 
+    setImages, 
+    addImage, 
+    updateImage, 
+    removeImage, 
+    setLoading, 
+    setUploading, 
+    searchImages 
+  } = useImageStore();
   const [dragActive, setDragActive] = useState(false);
-  const [loadingImages, setLoadingImages] = useState(false);
   const [editingImage, setEditingImage] = useState<ImageData | null>(null);
-  const [editForm, setEditForm] = useState({ originalName: '', description: '', category: '' });
+  const [editForm, setEditForm] = useState({ fileName: '', description: '', category: '' });
   const [uploadProgress, setUploadProgress] = useState<{
     [key: string]: {
       status: 'pending' | 'uploading' | 'success' | 'error';
@@ -41,58 +38,42 @@ export default function ImageDashboard() {
     }
   }>({});
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadImages();
-    }
-  }, [isAuthenticated]);
-
-  const loadImages = async () => {
-    setLoadingImages(true);
+  const loadImages = useCallback(async () => {
+    setLoading(true);
     try {
       const imageList = await getImages();
       
       // Ensure we have a valid array
       if (Array.isArray(imageList)) {
         setImages(imageList);
-        setFilteredImages(imageList);
         if (imageList.length === 0) {
           toast.info('No images found. Upload some images to get started!');
         }
       } else {
         console.error('Invalid image list received:', imageList);
         setImages([]);
-        setFilteredImages([]);
         toast.error('Invalid response from server. Please try again.');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
       console.error('Failed to load images:', error);
       setImages([]);
-      setFilteredImages([]);
       toast.error(`Failed to load images: ${errorMessage}`);
     } finally {
-      setLoadingImages(false);
+      setLoading(false);
     }
-  };
+  }, [getImages, setImages, setLoading]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadImages();
+    }
+  }, [isAuthenticated, loadImages]);
 
   // Search functionality with useCallback for performance
   const handleSearch = useCallback((term: string) => {
-    setSearchTerm(term);
-    if (!term.trim()) {
-      setFilteredImages(images);
-      return;
-    }
-
-    const filtered = images.filter(image => {
-      const filename = (image.filename || '').toLowerCase();
-      const originalName = (image.originalName || '').toLowerCase();
-      const searchTermLower = term.toLowerCase();
-      
-      return filename.includes(searchTermLower) || originalName.includes(searchTermLower);
-    });
-    setFilteredImages(filtered);
-  }, [images]);
+    searchImages(term);
+  }, [searchImages]);
 
   const handleFileUpload = async (files: FileList | null) => {
     if (!files) return;
@@ -130,7 +111,10 @@ export default function ImageDashboard() {
           [fileName]: { status: 'uploading', progress: 50 }
         }));
 
-        await uploadImage(file);
+        const uploadedImage = await uploadImage(file);
+        
+        // Add to store
+        addImage(uploadedImage);
         
         // Update status to success
         setUploadProgress(prev => ({
@@ -171,10 +155,7 @@ export default function ImageDashboard() {
       toast.error(`❌ All ${errorCount} uploads failed`);
     }
 
-    // Reload images if any were successful
-    if (successCount > 0) {
-      await loadImages();
-    }
+    // No need to reload images - they're already added to store
 
     // Clear progress after a delay
     setTimeout(() => {
@@ -188,8 +169,8 @@ export default function ImageDashboard() {
     if (confirm('Are you sure you want to delete this image?')) {
       try {
         await deleteImage(imageId);
+        removeImage(imageId);
         toast.success('Image deleted successfully!');
-        await loadImages();
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Delete failed';
         console.error('Delete failed:', error);
@@ -201,7 +182,7 @@ export default function ImageDashboard() {
   const handleEditClick = useCallback((image: ImageData) => {
     setEditingImage(image);
     setEditForm({
-      originalName: image.originalName || '',
+      fileName: image.filename || '',
       description: image.description || '',
       category: image.category || ''
     });
@@ -213,31 +194,20 @@ export default function ImageDashboard() {
 
     try {
       await editImage(editingImage.id, editForm);
+      updateImage(editingImage.id, editForm);
       toast.success('Image updated successfully!');
       
-      // Update the local state
-      setImages(prev => prev.map(img => 
-        img.id === editingImage.id 
-          ? { ...img, ...editForm }
-          : img
-      ));
-      setFilteredImages(prev => prev.map(img => 
-        img.id === editingImage.id 
-          ? { ...img, ...editForm }
-          : img
-      ));
-      
       setEditingImage(null);
-      setEditForm({ originalName: '', description: '', category: '' });
+      setEditForm({ fileName: '', description: '', category: '' });
     } catch (error) {
       console.error('Edit failed:', error);
       toast.error('Failed to update image');
     }
-  }, [editingImage, editForm, editImage]);
+  }, [editingImage, editForm, editImage, updateImage]);
 
   const handleEditCancel = useCallback(() => {
     setEditingImage(null);
-    setEditForm({ originalName: '', description: '', category: '' });
+    setEditForm({ fileName: '', description: '', category: '' });
   }, []);
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
@@ -491,7 +461,7 @@ export default function ImageDashboard() {
                 <label className="block text-white/70 text-sm mb-1">Name</label>
                 <input
                   type="text"
-                  value={editForm.originalName}
+                  value={editForm.fileName}
                   onChange={(e) => setEditForm(prev => ({ ...prev, originalName: e.target.value }))}
                   className="w-full px-3 py-2 bg-[#262626] border border-[#404040] rounded text-white placeholder-white/50 focus:outline-none focus:border-blue-500"
                   placeholder="Image name"

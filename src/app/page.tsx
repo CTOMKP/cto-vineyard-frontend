@@ -6,34 +6,27 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useApi } from "../hooks/useApi";
 import { MoonLoader } from "react-spinners";
 import { toast } from "react-toastify";
-
-interface ImageData {
-  id: string;
-  url: string;
-  originalName: string;
-  size: number;
-  uploadDate: string;
-  filename?: string;
-  mimeType?: string;
-  path?: string;
-  description?: string;
-  category?: string;
-}
+import { useImageStore, ImageData } from "../stores/imageStore";
 
 export default function Home() {
   const { getImages, downloadImage } = useApi();
-  const [images, setImages] = useState<ImageData[]>([]);
-  const [filteredImages, setFilteredImages] = useState<ImageData[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
+  const { 
+    images, 
+    filteredImages, 
+    searchTerm, 
+    loading, 
+    setImages, 
+    setLoading, 
+    searchImages 
+  } = useImageStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
+        setLoading(true);
         const imageList = await getImages();
         setImages(imageList);
-        setFilteredImages(imageList);
         if (imageList.length === 0) {
           toast.info('No images available. Check back later!');
         }
@@ -47,26 +40,13 @@ export default function Home() {
     };
 
     fetchImages();
-  }, [getImages]);
+  }, [getImages, setImages, setLoading]);
 
   const handleSearch = useCallback(
     (term: string) => {
-      setSearchTerm(term);
-      if (!term.trim()) {
-        setFilteredImages(images);
-        return;
-      }
-
-      const filtered = images.filter((image) => {
-        const filename = (image.filename || '').toLowerCase();
-        const originalName = (image.originalName || '').toLowerCase();
-        const searchTermLower = term.toLowerCase();
-        
-        return filename.includes(searchTermLower) || originalName.includes(searchTermLower);
-      });
-      setFilteredImages(filtered);
+      searchImages(term);
     },
-    [images]
+    [searchImages]
   );
 
   useEffect(() => {
