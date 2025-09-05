@@ -5,6 +5,7 @@ import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -27,16 +28,21 @@ export default function SignIn() {
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        const errorMessage = 'Invalid email or password';
+        setError(errorMessage);
+        toast.error(errorMessage);
       } else {
         // Check if user is authenticated
         const session = await getSession();
         if (session) {
+          toast.success('Welcome back! Signing you in...');
           router.push('/meme-dashboard');
         }
       }
-    } catch {
-      setError('An error occurred. Please try again.');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

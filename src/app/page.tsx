@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useApi } from "../hooks/useApi";
 import { MoonLoader } from "react-spinners";
+import { toast } from "react-toastify";
 
 interface ImageData {
   id: string;
@@ -31,8 +32,13 @@ export default function Home() {
         const imageList = await getImages();
         setImages(imageList);
         setFilteredImages(imageList);
+        if (imageList.length === 0) {
+          toast.info('No images available. Check back later!');
+        }
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
         console.error("Failed to load images:", error);
+        toast.error(`Failed to load images: ${errorMessage}`);
       } finally {
         setLoading(false);
       }

@@ -4,9 +4,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useApi } from '../../hooks/useApi';
 import { MoonLoader } from 'react-spinners';
-import { Search } from 'lucide-react';
+import { Search, Upload, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
 
 interface ImageData {
   id: string;
@@ -28,6 +29,13 @@ export default function ImageDashboard() {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    [key: string]: {
+      status: 'pending' | 'uploading' | 'success' | 'error';
+      progress: number;
+      error?: string;
+    }
+  }>({});
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -44,15 +52,21 @@ export default function ImageDashboard() {
       if (Array.isArray(imageList)) {
         setImages(imageList);
         setFilteredImages(imageList);
+        if (imageList.length === 0) {
+          toast.info('No images found. Upload some images to get started!');
+        }
       } else {
         console.error('Invalid image list received:', imageList);
         setImages([]);
         setFilteredImages([]);
+        toast.error('Invalid response from server. Please try again.');
       }
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
       console.error('Failed to load images:', error);
       setImages([]);
       setFilteredImages([]);
+      toast.error(`Failed to load images: ${errorMessage}`);
     } finally {
       setLoadingImages(false);
     }
@@ -76,30 +90,103 @@ export default function ImageDashboard() {
   const handleFileUpload = async (files: FileList | null) => {
     if (!files) return;
     
-    setUploading(true);
-    try {
-      for (const file of Array.from(files)) {
-        if (file.type.startsWith('image/')) {
-          await uploadImage(file);
-        }
-      }
-      await loadImages();
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
-    } finally {
-      setUploading(false);
+    const fileArray = Array.from(files).filter(file => file.type.startsWith('image/'));
+    
+    if (fileArray.length === 0) {
+      toast.error('Please select valid image files only.');
+      return;
     }
+
+    setUploading(true);
+    
+    // Initialize progress tracking for all files
+    const initialProgress: typeof uploadProgress = {};
+    fileArray.forEach(file => {
+      initialProgress[file.name] = {
+        status: 'pending',
+        progress: 0
+      };
+    });
+    setUploadProgress(initialProgress);
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Process files sequentially for better user experience
+    for (const file of fileArray) {
+      const fileName = file.name;
+      
+      try {
+        // Update status to uploading
+        setUploadProgress(prev => ({
+          ...prev,
+          [fileName]: { status: 'uploading', progress: 50 }
+        }));
+
+        await uploadImage(file);
+        
+        // Update status to success
+        setUploadProgress(prev => ({
+          ...prev,
+          [fileName]: { status: 'success', progress: 100 }
+        }));
+
+        successCount++;
+        toast.success(`✅ ${fileName} uploaded successfully!`);
+        
+        // Small delay between uploads for better UX
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+        
+        // Update status to error
+        setUploadProgress(prev => ({
+          ...prev,
+          [fileName]: { 
+            status: 'error', 
+            progress: 0, 
+            error: errorMessage 
+          }
+        }));
+
+        errorCount++;
+        toast.error(`❌ Failed to upload ${fileName}: ${errorMessage}`);
+      }
+    }
+
+    // Show summary toast
+    if (successCount > 0 && errorCount === 0) {
+      toast.success(`🎉 All ${successCount} images uploaded successfully!`);
+    } else if (successCount > 0 && errorCount > 0) {
+      toast.warning(`⚠️ ${successCount} uploaded, ${errorCount} failed`);
+    } else {
+      toast.error(`❌ All ${errorCount} uploads failed`);
+    }
+
+    // Reload images if any were successful
+    if (successCount > 0) {
+      await loadImages();
+    }
+
+    // Clear progress after a delay
+    setTimeout(() => {
+      setUploadProgress({});
+    }, 3000);
+
+    setUploading(false);
   };
 
   const handleDelete = async (imageId: string) => {
     if (confirm('Are you sure you want to delete this image?')) {
       try {
         await deleteImage(imageId);
+        toast.success('Image deleted successfully!');
         await loadImages();
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Delete failed';
         console.error('Delete failed:', error);
-        alert('Delete failed. Please try again.');
+        toast.error(`Failed to delete image: ${errorMessage}`);
       }
     }
   };
@@ -217,6 +304,45 @@ export default function ImageDashboard() {
         >
           {uploading ? 'Uploading...' : 'Select Images'}
         </label>
+        
+        {/* Upload Progress */}
+        {Object.keys(uploadProgress).length > 0 && (
+          <div className="mt-6 space-y-2">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Upload Progress:</h4>
+            {Object.entries(uploadProgress).map(([fileName, progress]) => (
+              <div key={fileName} className="flex items-center space-x-3 text-sm">
+                <div className="flex-shrink-0">
+                  {progress.status === 'success' && <CheckCircle className="w-4 h-4 text-green-500" />}
+                  {progress.status === 'error' && <XCircle className="w-4 h-4 text-red-500" />}
+                  {progress.status === 'uploading' && <Upload className="w-4 h-4 text-blue-500 animate-pulse" />}
+                  {progress.status === 'pending' && <AlertCircle className="w-4 h-4 text-gray-400" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-gray-600">{fileName}</p>
+                  {progress.status === 'error' && progress.error && (
+                    <p className="text-red-500 text-xs">{progress.error}</p>
+                  )}
+                </div>
+                <div className="flex-shrink-0">
+                  {progress.status === 'uploading' && (
+                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${progress.progress}%` }}
+                      />
+                    </div>
+                  )}
+                  {progress.status === 'success' && (
+                    <span className="text-green-500 text-xs">Done</span>
+                  )}
+                  {progress.status === 'error' && (
+                    <span className="text-red-500 text-xs">Failed</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Loading State */}
