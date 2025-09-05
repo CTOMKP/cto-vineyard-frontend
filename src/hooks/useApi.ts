@@ -11,6 +11,9 @@ interface Image {
   originalName: string;
   size: number;
   uploadDate: string;
+  filename?: string;
+  mimeType?: string;
+  path?: string;
 }
 
 interface ExtendedSession {
@@ -86,9 +89,6 @@ export const useApi = () => {
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     
-    console.log('Uploading to:', `${baseUrl}/api/images/upload`);
-    console.log('Access token:', extendedSession?.accessToken);
-    
     const response = await fetch(`${baseUrl}/api/images/upload`, {
       method: 'POST',
       headers: {
@@ -112,7 +112,14 @@ export const useApi = () => {
 
   const getImages = useCallback(async (): Promise<Image[]> => {
     const response = await apiCall('/images');
-    return response.data as Image[];
+    
+    // Backend returns direct array, so return it directly
+    if (Array.isArray(response)) {
+      return response as Image[];
+    }
+    
+    // Fallback for wrapped response format
+    return (response.data || response) as Image[];
   }, [apiCall]);
 
   const getImage = useCallback(async (imageId: string): Promise<Image> => {

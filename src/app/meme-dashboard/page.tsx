@@ -14,6 +14,9 @@ interface ImageData {
   originalName: string;
   size: number;
   uploadDate: string;
+  filename?: string;
+  mimeType?: string;
+  path?: string;
 }
 
 export default function ImageDashboard() {
@@ -36,10 +39,20 @@ export default function ImageDashboard() {
     setLoadingImages(true);
     try {
       const imageList = await getImages();
-      setImages(imageList);
-      setFilteredImages(imageList);
+      
+      // Ensure we have a valid array
+      if (Array.isArray(imageList)) {
+        setImages(imageList);
+        setFilteredImages(imageList);
+      } else {
+        console.error('Invalid image list received:', imageList);
+        setImages([]);
+        setFilteredImages([]);
+      }
     } catch (error) {
       console.error('Failed to load images:', error);
+      setImages([]);
+      setFilteredImages([]);
     } finally {
       setLoadingImages(false);
     }
@@ -53,9 +66,10 @@ export default function ImageDashboard() {
       return;
     }
 
-    const filtered = images.filter(image =>
-      image.originalName.toLowerCase().includes(term.toLowerCase())
-    );
+    const filtered = images.filter(image => {
+      const searchText = (image.filename || image.originalName).toLowerCase();
+      return searchText.includes(term.toLowerCase());
+    });
     setFilteredImages(filtered);
   }, [images]);
 
@@ -231,7 +245,9 @@ export default function ImageDashboard() {
                 />
               </div>
               <div className="space-y-2">
-                <h3 className="font-semibold truncate text-white text-sm">{image.originalName}</h3>
+                <h3 className="font-semibold truncate text-white text-sm">
+                  {image.filename || image.originalName}
+                </h3>
                 <p className="text-xs text-gray-400">
                   {(image.size / 1024).toFixed(1)} KB
                 </p>

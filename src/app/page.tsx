@@ -12,6 +12,9 @@ interface ImageData {
   originalName: string;
   size: number;
   uploadDate: string;
+  filename?: string;
+  mimeType?: string;
+  path?: string;
 }
 
 export default function Home() {
@@ -46,9 +49,10 @@ export default function Home() {
         return;
       }
 
-      const filtered = images.filter((image) =>
-        image.originalName.toLowerCase().includes(term.toLowerCase())
-      );
+      const filtered = images.filter((image) => {
+        const searchText = (image.filename || image.originalName).toLowerCase();
+        return searchText.includes(term.toLowerCase());
+      });
       setFilteredImages(filtered);
     },
     [images]
