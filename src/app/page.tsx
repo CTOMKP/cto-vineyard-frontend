@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useApi } from "../hooks/useApi";
@@ -16,10 +16,12 @@ interface ImageData {
   filename?: string;
   mimeType?: string;
   path?: string;
+  description?: string;
+  category?: string;
 }
 
 export default function Home() {
-  const { getImages } = useApi();
+  const { getImages, downloadImage } = useApi();
   const [images, setImages] = useState<ImageData[]>([]);
   const [filteredImages, setFilteredImages] = useState<ImageData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,6 +77,25 @@ export default function Home() {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const handleDownload = useCallback(async (image: ImageData) => {
+    try {
+      const blob = await downloadImage(image.id);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = image.originalName || `image-${image.id}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('Image downloaded successfully!');
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast.error('Failed to download image');
+    }
+  }, [downloadImage]);
+
 
   if (loading) {
     return (
@@ -143,8 +164,20 @@ export default function Home() {
                   target.style.display = "none";
                 }}
               />
-              {/* Hover overlay with image name */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-end p-2">
+              {/* Hover overlay with image name and download button */}
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex flex-col justify-between p-2">
+                <div className="flex justify-end">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload(image);
+                    }}
+                    className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+                    title="Download image"
+                  >
+                    <Download size={16} className="text-white" />
+                  </button>
+                </div>
                 <span className="text-white text-sm truncate">
                   {image.originalName}
                 </span>
@@ -161,6 +194,7 @@ export default function Home() {
             : "No memes available yet."}
         </div>
       )}
+
     </div>
   );
 }

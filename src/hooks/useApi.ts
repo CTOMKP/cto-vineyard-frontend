@@ -14,6 +14,8 @@ interface Image {
   filename?: string;
   mimeType?: string;
   path?: string;
+  description?: string;
+  category?: string;
 }
 
 interface ExtendedSession {
@@ -143,6 +145,13 @@ export const useApi = () => {
     return response.blob();
   }, [extendedSession]);
 
+  const editImage = useCallback(async (imageId: string, data: { originalName?: string; description?: string; category?: string }): Promise<ApiResponse> => {
+    return apiCall(`/images/${imageId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }, [apiCall]);
+
   return {
     apiCall,
     uploadImage,
@@ -150,6 +159,7 @@ export const useApi = () => {
     getImages,
     getImage,
     downloadImage,
+    editImage,
     isAuthenticated: !!extendedSession?.accessToken,
   };
 };

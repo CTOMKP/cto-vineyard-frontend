@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useApi } from '../../hooks/useApi';
 import { MoonLoader } from 'react-spinners';
-import { Search, Upload, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Search, Upload, CheckCircle, XCircle, AlertCircle, Edit3 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
@@ -18,17 +18,21 @@ interface ImageData {
   filename?: string;
   mimeType?: string;
   path?: string;
+  description?: string;
+  category?: string;
 }
 
 export default function ImageDashboard() {
   const { data: session, status } = useSession();
-  const { uploadImage, deleteImage, getImages, isAuthenticated } = useApi();
+  const { uploadImage, deleteImage, getImages, editImage, isAuthenticated } = useApi();
   const [images, setImages] = useState<ImageData[]>([]);
   const [filteredImages, setFilteredImages] = useState<ImageData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [loadingImages, setLoadingImages] = useState(false);
+  const [editingImage, setEditingImage] = useState<ImageData | null>(null);
+  const [editForm, setEditForm] = useState({ originalName: '', description: '', category: '' });
   const [uploadProgress, setUploadProgress] = useState<{
     [key: string]: {
       status: 'pending' | 'uploading' | 'success' | 'error';
@@ -190,6 +194,48 @@ export default function ImageDashboard() {
       }
     }
   };
+
+  const handleEditClick = useCallback((image: ImageData) => {
+    setEditingImage(image);
+    setEditForm({
+      originalName: image.originalName || '',
+      description: image.description || '',
+      category: image.category || ''
+    });
+  }, []);
+
+  const handleEditSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingImage) return;
+
+    try {
+      await editImage(editingImage.id, editForm);
+      toast.success('Image updated successfully!');
+      
+      // Update the local state
+      setImages(prev => prev.map(img => 
+        img.id === editingImage.id 
+          ? { ...img, ...editForm }
+          : img
+      ));
+      setFilteredImages(prev => prev.map(img => 
+        img.id === editingImage.id 
+          ? { ...img, ...editForm }
+          : img
+      ));
+      
+      setEditingImage(null);
+      setEditForm({ originalName: '', description: '', category: '' });
+    } catch (error) {
+      console.error('Edit failed:', error);
+      toast.error('Failed to update image');
+    }
+  }, [editingImage, editForm, editImage]);
+
+  const handleEditCancel = useCallback(() => {
+    setEditingImage(null);
+    setEditForm({ originalName: '', description: '', category: '' });
+  }, []);
 
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -390,6 +436,13 @@ export default function ImageDashboard() {
                     View
                   </a>
                   <button
+                    onClick={() => handleEditClick(image)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs flex-1 transition-colors flex items-center justify-center gap-1"
+                  >
+                    <Edit3 size={12} />
+                    Edit
+                  </button>
+                  <button
                     onClick={() => handleDelete(image.id)}
                     className="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded text-xs flex-1 transition-colors"
                   >
@@ -422,6 +475,62 @@ export default function ImageDashboard() {
               : 'Start building your meme collection by uploading your first image!'
             }
           </p>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingImage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a1a] border border-[#262626] rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-white text-lg font-semibold mb-4">Edit Image</h3>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-white/70 text-sm mb-1">Name</label>
+                <input
+                  type="text"
+                  value={editForm.originalName}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, originalName: e.target.value }))}
+                  className="w-full px-3 py-2 bg-[#262626] border border-[#404040] rounded text-white placeholder-white/50 focus:outline-none focus:border-blue-500"
+                  placeholder="Image name"
+                />
+              </div>
+              <div>
+                <label className="block text-white/70 text-sm mb-1">Description</label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full px-3 py-2 bg-[#262626] border border-[#404040] rounded text-white placeholder-white/50 focus:outline-none focus:border-blue-500 resize-none"
+                  rows={3}
+                  placeholder="Image description"
+                />
+              </div>
+              <div>
+                <label className="block text-white/70 text-sm mb-1">Category</label>
+                <input
+                  type="text"
+                  value={editForm.category}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, category: e.target.value }))}
+                  className="w-full px-3 py-2 bg-[#262626] border border-[#404040] rounded text-white placeholder-white/50 focus:outline-none focus:border-blue-500"
+                  placeholder="Image category"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition-colors"
+                >
+                  Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={handleEditCancel}
+                  className="flex-1 bg-[#404040] hover:bg-[#505050] text-white py-2 px-4 rounded transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
