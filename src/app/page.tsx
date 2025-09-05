@@ -147,7 +147,7 @@ export default function Home() {
             >
               <Image
                 src={image.url}
-                alt={image.originalName}
+                alt={image.filename || image.originalName}
                 fill
                 className="object-cover border border-[#262626] rounded-[6px] hover:scale-105 transition-transform duration-200 cursor-pointer"
                 onError={(e) => {
@@ -179,7 +179,7 @@ export default function Home() {
                 </div>
                 <div className="bg-black/70 rounded-lg px-2 py-1">
                   <span className="text-white text-sm font-medium truncate block">
-                    {image.originalName}
+                    {image.filename || image.originalName}
                   </span>
                 </div>
               </div>

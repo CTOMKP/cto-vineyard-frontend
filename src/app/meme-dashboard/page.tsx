@@ -403,7 +403,7 @@ export default function ImageDashboard() {
               <div className="aspect-square bg-gray-100 rounded mb-3 flex items-center justify-center overflow-hidden relative">
                 <Image
                   src={image.url}
-                  alt={image.originalName}
+                  alt={image.filename || image.originalName}
                   fill
                   className="object-cover"
                   onError={() => {
