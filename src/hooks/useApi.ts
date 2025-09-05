@@ -146,9 +146,15 @@ export const useApi = () => {
   }, [extendedSession]);
 
   const editImage = useCallback(async (imageId: string, data: { fileName?: string; description?: string; category?: string }): Promise<ApiResponse> => {
+    // Transform fileName to filename for the API
+    const apiData = {
+      filename: data.fileName,
+      description: data.description,
+      category: data.category
+    };
     return apiCall(`/images/${imageId}`, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body: JSON.stringify(apiData),
     });
   }, [apiCall]);
 

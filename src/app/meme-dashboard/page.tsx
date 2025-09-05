@@ -68,10 +68,11 @@ export default function ImageDashboard() {
   }, [getImages, setImages, setLoading, setHasAttemptedFetch]);
 
   useEffect(() => {
-    if (isAuthenticated && (!hasAttemptedFetch || (images.length === 0 && !loadingImages))) {
+    // Only fetch if authenticated and we haven't attempted fetch yet
+    if (isAuthenticated && !hasAttemptedFetch) {
       loadImages();
     }
-  }, [isAuthenticated, loadImages, images.length, loadingImages, hasAttemptedFetch]);
+  }, [isAuthenticated, loadImages, hasAttemptedFetch]);
 
   // Search functionality with useCallback for performance
   const handleSearch = useCallback((term: string) => {
@@ -196,14 +197,19 @@ export default function ImageDashboard() {
     if (!editingImage) return;
 
     try {
-      // Transform fileName to originalName for API
+      // Send fileName directly to API
       const apiData = {
-        originalName: editForm.fileName,
+        fileName: editForm.fileName,
         description: editForm.description,
         category: editForm.category
       };
       await editImage(editingImage.id, apiData);
-      updateImage(editingImage.id, apiData);
+      // Update local store with originalName for consistency
+      updateImage(editingImage.id, {
+        originalName: editForm.fileName,
+        description: editForm.description,
+        category: editForm.category
+      });
       toast.success('Image updated successfully!');
       
       setEditingImage(null);
