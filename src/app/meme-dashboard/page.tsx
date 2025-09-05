@@ -85,8 +85,11 @@ export default function ImageDashboard() {
     }
 
     const filtered = images.filter(image => {
-      const searchText = (image.filename || image.originalName).toLowerCase();
-      return searchText.includes(term.toLowerCase());
+      const filename = (image.filename || '').toLowerCase();
+      const originalName = (image.originalName || '').toLowerCase();
+      const searchTermLower = term.toLowerCase();
+      
+      return filename.includes(searchTermLower) || originalName.includes(searchTermLower);
     });
     setFilteredImages(filtered);
   }, [images]);

@@ -58,8 +58,11 @@ export default function Home() {
       }
 
       const filtered = images.filter((image) => {
-        const searchText = (image.filename || image.originalName).toLowerCase();
-        return searchText.includes(term.toLowerCase());
+        const filename = (image.filename || '').toLowerCase();
+        const originalName = (image.originalName || '').toLowerCase();
+        const searchTermLower = term.toLowerCase();
+        
+        return filename.includes(searchTermLower) || originalName.includes(searchTermLower);
       });
       setFilteredImages(filtered);
     },
@@ -148,11 +151,11 @@ export default function Home() {
 
       {/* Images Grid */}
       <div className="flex justify-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3  2xl:grid-cols- gap-4">
+        <div className="grid grid-cols-1 w-full sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4  2xl:grid-cols-5 gap-4">
           {filteredImages.map((image) => (
             <div
               key={image.id}
-              className="relative group size-[150px] sm:size-[300px] lg:size-[300px]"
+              className="relative group size-[300px] sm:size-[200px] lg:size-[300px]"
             >
               <Image
                 src={image.url}
