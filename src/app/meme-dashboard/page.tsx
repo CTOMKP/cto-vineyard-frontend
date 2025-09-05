@@ -68,11 +68,12 @@ export default function ImageDashboard() {
   }, [getImages, setImages, setLoading]);
 
   useEffect(() => {
-    // Only fetch if authenticated and we don't have images already (prevents tab-switch refresh)
-    if (isAuthenticated && images.length === 0 && !loadingImages) {
-      loadImages();
+    // Clear images on dashboard mount to ensure fresh data
+    if (isAuthenticated) {
+      setImages([]); // Clear any cached images
+      loadImages(); // Fetch fresh data
     }
-  }, [isAuthenticated, loadImages, images.length, loadingImages]);
+  }, [isAuthenticated, loadImages, setImages]);
 
   // Search functionality with useCallback for performance
   const handleSearch = useCallback((term: string) => {
