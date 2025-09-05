@@ -19,12 +19,14 @@ export default function ImageDashboard() {
     searchTerm, 
     loading: loadingImages, 
     uploading, 
+    hasAttemptedFetch,
     setImages, 
     addImage, 
     updateImage, 
     removeImage, 
     setLoading, 
     setUploading, 
+    setHasAttemptedFetch,
     searchImages 
   } = useImageStore();
   const [dragActive, setDragActive] = useState(false);
@@ -40,6 +42,7 @@ export default function ImageDashboard() {
 
   const loadImages = useCallback(async () => {
     setLoading(true);
+    setHasAttemptedFetch(true);
     try {
       const imageList = await getImages();
       
@@ -62,13 +65,13 @@ export default function ImageDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [getImages, setImages, setLoading]);
+  }, [getImages, setImages, setLoading, setHasAttemptedFetch]);
 
   useEffect(() => {
-    if (isAuthenticated && images.length === 0 && !loadingImages) {
+    if (isAuthenticated && (!hasAttemptedFetch || (images.length === 0 && !loadingImages))) {
       loadImages();
     }
-  }, [isAuthenticated, loadImages, images.length, loadingImages]);
+  }, [isAuthenticated, loadImages, images.length, loadingImages, hasAttemptedFetch]);
 
   // Search functionality with useCallback for performance
   const handleSearch = useCallback((term: string) => {

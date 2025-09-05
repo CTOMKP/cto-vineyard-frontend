@@ -15,19 +15,22 @@ export default function Home() {
     filteredImages, 
     searchTerm, 
     loading, 
+    hasAttemptedFetch,
     setImages, 
     setLoading, 
+    setHasAttemptedFetch,
     searchImages 
   } = useImageStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Only fetch if we don't have images already
-    if (images.length === 0 && !loading) {
+    // Fetch if we haven't attempted to fetch yet, or if we have no images and aren't loading
+    if (!hasAttemptedFetch || (images.length === 0 && !loading)) {
       const fetchImages = async () => {
         try {
           setLoading(true);
+          setHasAttemptedFetch(true);
           const imageList = await getImages();
           setImages(imageList);
           if (imageList.length === 0) {
@@ -44,7 +47,7 @@ export default function Home() {
 
       fetchImages();
     }
-  }, [getImages, setImages, setLoading, images.length, loading]);
+  }, [getImages, setImages, setLoading, setHasAttemptedFetch, images.length, loading, hasAttemptedFetch]);
 
   const handleSearch = useCallback(
     (term: string) => {

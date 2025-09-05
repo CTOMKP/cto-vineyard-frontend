@@ -20,6 +20,7 @@ interface ImageState {
   searchTerm: string;
   loading: boolean;
   uploading: boolean;
+  hasAttemptedFetch: boolean;
   
   // Actions
   setImages: (images: ImageData[]) => void;
@@ -30,6 +31,7 @@ interface ImageState {
   setFilteredImages: (images: ImageData[]) => void;
   setLoading: (loading: boolean) => void;
   setUploading: (uploading: boolean) => void;
+  setHasAttemptedFetch: (attempted: boolean) => void;
   
   // Computed actions
   searchImages: (term: string) => void;
@@ -45,6 +47,7 @@ export const useImageStore = create<ImageState>()(
       searchTerm: '',
       loading: false,
       uploading: false,
+      hasAttemptedFetch: false,
 
       setImages: (images) => {
         set({ images, filteredImages: images });
@@ -106,6 +109,10 @@ export const useImageStore = create<ImageState>()(
         set({ uploading });
       },
 
+      setHasAttemptedFetch: (attempted) => {
+        set({ hasAttemptedFetch: attempted });
+      },
+
       searchImages: (term) => {
         const { images } = get();
         
@@ -136,6 +143,7 @@ export const useImageStore = create<ImageState>()(
         partialize: (state) => ({
           images: state.images,
           searchTerm: state.searchTerm,
+          hasAttemptedFetch: state.hasAttemptedFetch,
         }),
       }
     ),
