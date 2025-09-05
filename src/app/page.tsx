@@ -135,7 +135,7 @@ export default function Home() {
           {filteredImages.map((image) => (
             <div
               key={image.id}
-              className="relative group size-[300px] sm:size-[200px] lg:size-[300px]"
+              className="relative group size-[300px] sm:size-[200px] lg:size-[250px]"
             >
               <Image
                 src={image.url}
