@@ -156,7 +156,7 @@ export default function Home() {
                 }}
               />
               {/* Hover overlay with image name and download button */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex flex-col justify-between p-2">
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex flex-col justify-between p-3">
                 <div className="flex justify-end">
                   <button
                     onClick={(e) => {
@@ -164,19 +164,24 @@ export default function Home() {
                       handleDownload(image);
                     }}
                     disabled={downloadingImageId === image.id}
-                    className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-2 bg-white/90 hover:bg-white text-black rounded-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg hover:shadow-xl"
                     title={downloadingImageId === image.id ? "Downloading..." : "Download image"}
                   >
                     {downloadingImageId === image.id ? (
-                      <MoonLoader size={16} color="#FFFFFF" />
+                      <MoonLoader size={14} color="#000000" />
                     ) : (
-                      <Download size={16} className="text-white" />
+                      <Download size={14} className="text-black" />
                     )}
+                    <span className="text-xs font-medium">
+                      {downloadingImageId === image.id ? 'Downloading...' : 'Download'}
+                    </span>
                   </button>
                 </div>
-                <span className="text-white text-sm truncate">
-                  {image.originalName}
-                </span>
+                <div className="bg-black/70 rounded-lg px-2 py-1">
+                  <span className="text-white text-sm font-medium truncate block">
+                    {image.originalName}
+                  </span>
+                </div>
               </div>
             </div>
           ))}

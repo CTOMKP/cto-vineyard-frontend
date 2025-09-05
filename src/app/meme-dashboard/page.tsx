@@ -37,6 +37,8 @@ export default function ImageDashboard() {
       error?: string;
     }
   }>({});
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -170,6 +172,7 @@ export default function ImageDashboard() {
   const handleDelete = async (imageId: string) => {
     if (confirm('Are you sure you want to delete this image?')) {
       try {
+        setDeletingImageId(imageId);
         await deleteImage(imageId);
         removeImage(imageId);
         toast.success('Image deleted successfully!');
@@ -177,6 +180,8 @@ export default function ImageDashboard() {
         const errorMessage = error instanceof Error ? error.message : 'Delete failed';
         console.error('Delete failed:', error);
         toast.error(`Failed to delete image: ${errorMessage}`);
+      } finally {
+        setDeletingImageId(null);
       }
     }
   };
@@ -195,6 +200,7 @@ export default function ImageDashboard() {
     if (!editingImage) return;
 
     try {
+      setEditingImageId(editingImage.id);
       // Send fileName directly to API
       const apiData = {
         fileName: editForm.fileName,
@@ -215,6 +221,8 @@ export default function ImageDashboard() {
     } catch (error) {
       console.error('Edit failed:', error);
       toast.error('Failed to update image');
+    } finally {
+      setEditingImageId(null);
     }
   }, [editingImage, editForm, editImage, updateImage]);
 
@@ -423,16 +431,25 @@ export default function ImageDashboard() {
                   </a>
                   <button
                     onClick={() => handleEditClick(image)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs flex-1 transition-colors flex items-center justify-center gap-1"
+                    disabled={editingImageId === image.id || deletingImageId === image.id}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-2 py-1 rounded text-xs flex-1 transition-colors flex items-center justify-center gap-1"
                   >
-                    <Edit3 size={12} />
-                    Edit
+                    {editingImageId === image.id ? (
+                      <MoonLoader size={12} color="#FFFFFF" />
+                    ) : (
+                      <Edit3 size={12} />
+                    )}
+                    {editingImageId === image.id ? 'Saving...' : 'Edit'}
                   </button>
                   <button
                     onClick={() => handleDelete(image.id)}
-                    className="bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded text-xs flex-1 transition-colors"
+                    disabled={deletingImageId === image.id || editingImageId === image.id}
+                    className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-2 py-1 rounded text-xs flex-1 transition-colors flex items-center justify-center gap-1"
                   >
-                    Delete
+                    {deletingImageId === image.id ? (
+                      <MoonLoader size={12} color="#FFFFFF" />
+                    ) : null}
+                    {deletingImageId === image.id ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </div>
@@ -503,14 +520,19 @@ export default function ImageDashboard() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition-colors"
+                  disabled={editingImageId === editingImage?.id}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2 px-4 rounded transition-colors flex items-center justify-center gap-2"
                 >
-                  Save Changes
+                  {editingImageId === editingImage?.id ? (
+                    <MoonLoader size={16} color="#FFFFFF" />
+                  ) : null}
+                  {editingImageId === editingImage?.id ? 'Saving...' : 'Save Changes'}
                 </button>
                 <button
                   type="button"
                   onClick={handleEditCancel}
-                  className="flex-1 bg-[#404040] hover:bg-[#505050] text-white py-2 px-4 rounded transition-colors"
+                  disabled={editingImageId === editingImage?.id}
+                  className="flex-1 bg-[#404040] hover:bg-[#505050] disabled:opacity-50 disabled:cursor-not-allowed text-white py-2 px-4 rounded transition-colors"
                 >
                   Cancel
                 </button>
