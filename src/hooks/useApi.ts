@@ -112,17 +112,28 @@ export const useApi = () => {
     return apiCall(`/images/${imageId}`, { method: 'DELETE' });
   }, [apiCall]);
 
-  const getImages = useCallback(async (): Promise<Image[]> => {
-    const response = await apiCall('/images');
-    
-    // Backend returns direct array, so return it directly
-    if (Array.isArray(response)) {
-      return response as Image[];
-    }
-    
-    // Fallback for wrapped response format
-    return (response.data || response) as Image[];
-  }, [apiCall]);
+  // In your useApi hook, update the getImages function:
+const getImages = useCallback(async (): Promise<Image[]> => {
+  const response = await apiCall('/images');
+  
+  // Backend returns direct array, so return it directly
+  if (Array.isArray(response)) {
+    // Fix URLs to be absolute URLs for Railway deployment
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    return (response as Image[]).map(image => ({
+      ...image,
+      url: `${baseUrl}${image.url}` // Convert relative URL to absolute
+    }));
+  }
+  
+  // Fallback for wrapped response format
+  const images = (response.data || response) as Image[];
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  return images.map(image => ({
+    ...image,
+    url: `${baseUrl}${image.url}` // Convert relative URL to absolute
+  }));
+}, [apiCall]);
 
   const getImage = useCallback(async (imageId: string): Promise<Image> => {
     const response = await apiCall(`/images/${imageId}`);
