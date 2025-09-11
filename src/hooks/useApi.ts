@@ -124,11 +124,6 @@ export const useApi = () => {
     return (response.data || response) as Image[];
   }, [apiCall]);
 
-  const getImage = useCallback(async (imageId: string): Promise<Image> => {
-    const response = await apiCall(`/images/${imageId}`);
-    return response.data as Image;
-  }, [apiCall]);
-
   const downloadImage = useCallback(async (imageId: string): Promise<Blob> => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     
@@ -163,7 +158,6 @@ export const useApi = () => {
     uploadImage,
     deleteImage,
     getImages,
-    getImage,
     downloadImage,
     editImage,
     isAuthenticated: !!extendedSession?.accessToken,

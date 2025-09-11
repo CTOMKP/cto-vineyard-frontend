@@ -68,12 +68,11 @@ export default function ImageDashboard() {
   }, [getImages, setImages, setLoading]);
 
   useEffect(() => {
-    // Clear images on dashboard mount to ensure fresh data
-    if (isAuthenticated) {
-      setImages([]); // Clear any cached images
-      loadImages(); // Fetch fresh data
+    // Only fetch if we don't have images already (prevents tab-switch refresh)
+    if (isAuthenticated && images.length === 0 && !loadingImages) {
+      loadImages();
     }
-  }, [isAuthenticated, loadImages, setImages]);
+  }, [isAuthenticated, loadImages, images.length, loadingImages]);
 
   // Search functionality with useCallback for performance
   const handleSearch = useCallback((term: string) => {
@@ -402,7 +401,7 @@ export default function ImageDashboard() {
             <div key={image.id} className="border border-[#262626] rounded-lg p-3 bg-[#1a1a1a]">
               <div className="aspect-square bg-gray-100 rounded mb-3 flex items-center justify-center overflow-hidden relative">
                 <Image
-                  src={image.url}
+                  src={`${image.url}`}
                   alt={image.filename || image.originalName}
                   fill
                   className="object-cover"

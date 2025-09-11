@@ -146,7 +146,7 @@ export default function Home() {
               className="relative group size-[300px] sm:size-[200px] lg:size-[250px]"
             >
               <Image
-                src={image.url}
+                src={`${image.url}`}
                 alt={image.filename || image.originalName}
                 fill
                 className="object-cover border border-[#262626] rounded-[6px] hover:scale-105 transition-transform duration-200 cursor-pointer"
@@ -157,26 +157,23 @@ export default function Home() {
               />
               {/* Always visible overlay */}
               <div className="absolute inset-0 bg-black/30 opacity-100 transition-opacity duration-200 rounded-lg flex flex-col justify-between p-3">
-                <div className="flex justify-end">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownload(image);
-                    }}
-                    disabled={downloadingImageId === image.id}
-                    className="px-3 py-2 bg-white/90 hover:bg-white text-black rounded-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg hover:shadow-xl"
-                    title={downloadingImageId === image.id ? "Downloading..." : "Download image"}
-                  >
-                    {downloadingImageId === image.id ? (
-                      <MoonLoader size={14} color="#000000" />
-                    ) : (
-                      <Download size={14} className="text-black" />
-                    )}
-                    <span className="text-xs font-medium">
-                      {downloadingImageId === image.id ? 'Downloading...' : 'Download'}
-                    </span>
-                  </button>
-                </div>
+                 <div className="flex justify-end">
+                   <button
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       handleDownload(image);
+                     }}
+                     disabled={downloadingImageId === image.id}
+                     className="w-8 h-8 bg-white/90 hover:bg-white text-black rounded-full transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:shadow-xl"
+                     title={downloadingImageId === image.id ? "Downloading..." : "Download image"}
+                   >
+                     {downloadingImageId === image.id ? (
+                       <MoonLoader size={16} color="#000000" />
+                     ) : (
+                       <Download size={16} className="text-black" />
+                     )}
+                   </button>
+                 </div>
                 <div className="bg-black/70 rounded-lg px-2 py-1">
                   <span className="text-white text-sm font-medium truncate block">
                     {image.filename || image.originalName}
