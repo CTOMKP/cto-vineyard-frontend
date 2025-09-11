@@ -145,16 +145,17 @@ export default function Home() {
               key={image.id}
               className="relative group size-[300px] sm:size-[200px] lg:size-[250px]"
             >
-              <Image
-                src={`${image.url}`}
-                alt={image.filename || image.originalName}
-                fill
-                className="object-cover border border-[#262626] rounded-[6px] hover:scale-105 transition-transform duration-200 cursor-pointer"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = "none";
-                }}
-              />
+                <Image
+                  src={image.url}
+                  alt={image.filename || image.originalName}
+                  fill
+                  className="object-cover border border-[#262626] rounded-[6px] hover:scale-105 transition-transform duration-200 cursor-pointer"
+                  unoptimized={true}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                  }}
+                />
               {/* Always visible overlay */}
               <div className="absolute inset-0 bg-black/30 opacity-100 transition-opacity duration-200 rounded-lg flex flex-col justify-between p-3">
                  <div className="flex justify-end">

@@ -401,10 +401,11 @@ export default function ImageDashboard() {
             <div key={image.id} className="border border-[#262626] rounded-lg p-3 bg-[#1a1a1a]">
               <div className="aspect-square bg-gray-100 rounded mb-3 flex items-center justify-center overflow-hidden relative">
                 <Image
-                  src={`${image.url}`}
+                  src={image.url}
                   alt={image.filename || image.originalName}
                   fill
                   className="object-cover"
+                  unoptimized={true}
                   onError={() => {
                     // Handle error by showing fallback
                   }}
