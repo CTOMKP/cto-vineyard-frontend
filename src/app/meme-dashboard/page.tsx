@@ -210,9 +210,9 @@ export default function ImageDashboard() {
         category: editForm.category
       };
       await editImage(editingImage.id, apiData);
-      // Update local store with originalName for consistency
+      // Update local store with the edited fields
       updateImage(editingImage.id, {
-        originalName: editForm.fileName,
+        filename: editForm.fileName,
         description: editForm.description,
         category: editForm.category
       });
