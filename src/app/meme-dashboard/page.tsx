@@ -39,6 +39,7 @@ export default function ImageDashboard() {
   }>({});
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const [editingImageId, setEditingImageId] = useState<string | null>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -68,11 +69,12 @@ export default function ImageDashboard() {
   }, [getImages, setImages, setLoading]);
 
   useEffect(() => {
-    // Only fetch if we don't have images already (prevents tab-switch refresh)
-    if (isAuthenticated && images.length === 0 && !loadingImages) {
+    // Always fetch on first mount when authenticated
+    if (isAuthenticated && !hasInitialized) {
+      setHasInitialized(true);
       loadImages();
     }
-  }, [isAuthenticated, loadImages, images.length, loadingImages]);
+  }, [isAuthenticated, hasInitialized, loadImages]);
 
   // Search functionality with useCallback for performance
   const handleSearch = useCallback((term: string) => {
@@ -445,12 +447,13 @@ export default function ImageDashboard() {
                   <button
                     onClick={() => handleDelete(image.id)}
                     disabled={deletingImageId === image.id || editingImageId === image.id}
-                    className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-2 py-1 rounded text-xs flex-1 transition-colors flex items-center justify-center gap-1"
+                    className="bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-2 py-1 rounded text-xs flex-1 transition-colors flex items-center justify-center"
                   >
                     {deletingImageId === image.id ? (
                       <MoonLoader size={12} color="#FFFFFF" />
-                    ) : null}
-                    {deletingImageId === image.id ? 'Deleting...' : 'Delete'}
+                    ) : (
+                      'Delete'
+                    )}
                   </button>
                 </div>
               </div>
