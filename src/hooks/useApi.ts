@@ -147,7 +147,9 @@ export const useApi = () => {
   }, [extendedSession]);
 
   const deleteImage = useCallback(async (imageId: string): Promise<ApiResponse> => {
-    return apiCall(`/images/${imageId}`, { method: 'DELETE' });
+    // URL encode the imageId to handle slashes (e.g., memes/filename.jpg)
+    const encodedId = encodeURIComponent(imageId);
+    return apiCall(`/images/${encodedId}`, { method: 'DELETE' });
   }, [apiCall]);
 
   const getImages = useCallback(async (): Promise<Image[]> => {
