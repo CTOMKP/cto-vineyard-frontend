@@ -69,30 +69,23 @@ export default function Home() {
   const handleDownload = useCallback(async (image: ImageData) => {
     try {
       setDownloadingImageId(image.id);
-      
-      // For S3 public URLs, use direct download with proper filename
-      const filename = image.filename || image.originalName || `meme-${Date.now()}.jpg`;
-      
-      // Create temporary link with download attribute
+      const blob = await downloadImage(image.id);
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = image.url;
-      link.download = filename;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      
-      // Trigger download
+      link.href = url;
+      link.download = image.filename || image.originalName || `image-${image.id}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      toast.success(`Downloading ${filename}...`);
+      window.URL.revokeObjectURL(url);
+      toast.success('Image downloaded successfully!');
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download image');
     } finally {
       setDownloadingImageId(null);
     }
-  }, []);
+  }, [downloadImage]);
 
 
   if (loading) {
