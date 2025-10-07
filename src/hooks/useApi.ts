@@ -47,7 +47,7 @@ export const useApi = () => {
 
   const apiCall = useCallback(async (endpoint: string, options: ApiCallOptions = {}): Promise<ApiResponse> => {
     // This points to your NestJS backend
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
     
     const config: RequestInit = {
       ...options,
@@ -93,7 +93,7 @@ export const useApi = () => {
       throw new Error('Image must be 10MB or less');
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
 
     // Step 1: Request presigned upload URL from backend
     const presignResponse = await fetch(`${baseUrl}/api/images/presign`, {
@@ -163,7 +163,7 @@ export const useApi = () => {
   }, [apiCall]);
 
   const downloadImage = useCallback(async (imageId: string): Promise<Blob> => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
     
     const response = await fetch(`${baseUrl}/api/images/${imageId}/download`, {
       headers: {
