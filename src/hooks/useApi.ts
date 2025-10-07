@@ -5,6 +5,8 @@ interface ApiCallOptions extends RequestInit {
   headers?: Record<string, string>;
 }
 
+
+
 interface Image {
   id: string;
   url: string;

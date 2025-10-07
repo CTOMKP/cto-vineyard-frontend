@@ -70,20 +70,22 @@ export default function Home() {
     try {
       setDownloadingImageId(image.id);
       
-      // Since memes are public on S3, download directly from the URL
-      const response = await fetch(image.url);
-      if (!response.ok) throw new Error('Download failed');
+      // For S3 public URLs, use direct download with proper filename
+      const filename = image.filename || image.originalName || `meme-${Date.now()}.jpg`;
       
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      // Create temporary link with download attribute
       const link = document.createElement('a');
-      link.href = url;
-      link.download = image.filename || image.originalName || `meme-${Date.now()}.jpg`;
+      link.href = image.url;
+      link.download = filename;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      
+      // Trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      toast.success('Image downloaded successfully!');
+      
+      toast.success(`Downloading ${filename}...`);
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download image');
