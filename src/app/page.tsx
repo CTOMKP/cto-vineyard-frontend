@@ -66,26 +66,34 @@ export default function Home() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleDownload = useCallback(async (image: ImageData) => {
+  const handleDownload = useCallback((image: ImageData) => {
     try {
       setDownloadingImageId(image.id);
-      const blob = await downloadImage(image.id);
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = image.filename || image.originalName || `image-${image.id}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      toast.success('Image downloaded successfully!');
+      
+      // Navigate directly to download endpoint - browser handles the download
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
+      const encodedId = encodeURIComponent(image.id);
+      const downloadUrl = `${baseUrl}/api/images/${encodedId}/download`;
+      
+      // Open in hidden iframe to trigger download without leaving page
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = downloadUrl;
+      document.body.appendChild(iframe);
+      
+      // Remove iframe after download starts
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+      
+      toast.success('Download started!');
+      setDownloadingImageId(null);
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download image');
-    } finally {
       setDownloadingImageId(null);
     }
-  }, [downloadImage]);
+  }, []);
 
 
   if (loading) {
