@@ -206,3 +206,53 @@ export const useApi = () => {
     isAuthenticated: !!extendedSession?.accessToken,
   };
 };
+
+  }, [extendedSession]);
+
+
+
+  const editImage = useCallback(async (imageId: string, data: { fileName?: string; description?: string; category?: string }): Promise<ApiResponse> => {
+
+    // Transform fileName to filename for the API
+
+    const apiData = {
+
+      filename: data.fileName,
+
+      description: data.description,
+
+      category: data.category
+
+    };
+
+    return apiCall(`/images/${imageId}`, {
+
+      method: 'PUT',
+
+      body: JSON.stringify(apiData),
+
+    });
+
+  }, [apiCall]);
+
+
+
+  return {
+
+    apiCall,
+
+    uploadImage,
+
+    deleteImage,
+
+    getImages,
+
+    downloadImage,
+
+    editImage,
+
+    isAuthenticated: !!extendedSession?.accessToken,
+
+  };
+
+};

@@ -69,11 +69,16 @@ export default function Home() {
   const handleDownload = useCallback(async (image: ImageData) => {
     try {
       setDownloadingImageId(image.id);
-      const blob = await downloadImage(image.id);
+      
+      // Since memes are public on S3, download directly from the URL
+      const response = await fetch(image.url);
+      if (!response.ok) throw new Error('Download failed');
+      
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = image.originalName || `image-${image.id}`;
+      link.download = image.filename || image.originalName || `meme-${Date.now()}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -85,7 +90,7 @@ export default function Home() {
     } finally {
       setDownloadingImageId(null);
     }
-  }, [downloadImage]);
+  }, []);
 
 
   if (loading) {
