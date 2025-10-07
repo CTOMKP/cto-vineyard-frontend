@@ -70,24 +70,17 @@ export default function Home() {
     try {
       setDownloadingImageId(image.id);
       
-      // Navigate directly to download endpoint - browser handles the download
+      // Navigate directly to download endpoint
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
       const encodedId = encodeURIComponent(image.id);
       const downloadUrl = `${baseUrl}/api/images/${encodedId}/download`;
       
-      // Open in hidden iframe to trigger download without leaving page
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = downloadUrl;
-      document.body.appendChild(iframe);
-      
-      // Remove iframe after download starts
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 1000);
+      // Simply navigate to the download URL - browser will download the file
+      window.location.href = downloadUrl;
       
       toast.success('Download started!');
-      setDownloadingImageId(null);
+      
+      setTimeout(() => setDownloadingImageId(null), 1000);
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download image');
