@@ -167,7 +167,10 @@ export const useApi = () => {
   const downloadImage = useCallback(async (imageId: string): Promise<Blob> => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
     
-    const response = await fetch(`${baseUrl}/api/images/${imageId}/download`, {
+    // URL encode the imageId to handle slashes
+    const encodedId = encodeURIComponent(imageId);
+    
+    const response = await fetch(`${baseUrl}/api/images/${encodedId}/download`, {
       headers: {
         Authorization: `Bearer ${extendedSession?.accessToken}`,
       },
