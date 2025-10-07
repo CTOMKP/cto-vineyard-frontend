@@ -86,26 +86,64 @@ export const useApi = () => {
       throw new Error('Authentication required');
     }
 
-    const formData = new FormData();
-    formData.append('image', file);
-
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    
-    const response = await fetch(`${baseUrl}/api/images/upload`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${extendedSession?.accessToken}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Upload failed:', response.status, errorText);
-      throw new Error(`Upload failed: ${response.status} ${errorText}`);
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Only image files are allowed');
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      throw new Error('Image must be 10MB or less');
     }
 
-    return response.json();
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+    // Step 1: Request presigned upload URL from backend
+    const presignResponse = await fetch(`${baseUrl}/api/images/presign`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${extendedSession.accessToken}`,
+      },
+      body: JSON.stringify({
+        type: 'meme',
+        filename: file.name,
+        mimeType: file.type,
+        size: file.size,
+      }),
+    });
+
+    if (!presignResponse.ok) {
+      const errorText = await presignResponse.text();
+      console.error('Presign failed:', presignResponse.status, errorText);
+      throw new Error(`Failed to get upload URL: ${presignResponse.status}`);
+    }
+
+    const { uploadUrl, key, metadata } = await presignResponse.json();
+    if (!uploadUrl || !key) {
+      throw new Error('Invalid presign response from server');
+    }
+
+    // Step 2: Upload directly to S3 using presigned URL
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': file.type,
+      },
+      body: file,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error(`S3 upload failed with status ${uploadResponse.status}`);
+    }
+
+    // Step 3: Return metadata with view URL
+    const viewUrl = `${baseUrl}/api/images/view/${key}`;
+    return {
+      id: key,
+      url: viewUrl,
+      originalName: key,
+      size: file.size,
+      uploadDate: new Date().toISOString(),
+      ...metadata,
+    };
   }, [extendedSession]);
 
   const deleteImage = useCallback(async (imageId: string): Promise<ApiResponse> => {
