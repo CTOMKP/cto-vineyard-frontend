@@ -186,13 +186,16 @@ export const useApi = () => {
   }, [extendedSession]);
 
   const editImage = useCallback(async (imageId: string, data: { fileName?: string; description?: string; category?: string }): Promise<ApiResponse> => {
+    // URL encode the imageId to handle slashes (same as delete)
+    const encodedId = encodeURIComponent(imageId);
+    
     // Transform fileName to filename for the API
     const apiData = {
       filename: data.fileName,
       description: data.description,
       category: data.category
     };
-    return apiCall(`/images/${imageId}`, {
+    return apiCall(`/images/${encodedId}`, {
       method: 'PUT',
       body: JSON.stringify(apiData),
     });
