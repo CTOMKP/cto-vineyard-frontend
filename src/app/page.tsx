@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { useImageStore, ImageData } from "../stores/imageStore";
 
 export default function Home() {
-  const { getImages, downloadImage } = useApi();
+  const { getImages } = useApi();
   const { 
     images, 
     filteredImages, 
@@ -21,40 +21,31 @@ export default function Home() {
   } = useImageStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null);
-  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    // Wait for zustand to hydrate from localStorage, then fetch if needed
-    const timer = setTimeout(() => {
-      if (!hasInitialized) {
-        setHasInitialized(true);
-        
-        // Only fetch if we still don't have images after hydration
-        if (images.length === 0 && !loading) {
-          const fetchImages = async () => {
-            try {
-              setLoading(true);
-              const imageList = await getImages();
-              setImages(imageList);
-              if (imageList.length === 0) {
-                toast.info('No images available. Check back later!');
-              }
-            } catch (error) {
-              const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
-              console.error("Failed to load images:", error);
-              toast.error(`Failed to load images: ${errorMessage}`);
-            } finally {
-              setLoading(false);
-            }
-          };
-          
-          fetchImages();
+    // Only fetch if we don't have images already (prevents tab-switch refresh)
+    if (images.length === 0 && !loading) {
+      const fetchImages = async () => {
+        try {
+          setLoading(true);
+          const imageList = await getImages();
+          setImages(imageList);
+          // Only show "no images" message if we actually got an empty response
+          if (imageList.length === 0) {
+            toast.info('No images available. Check back later!');
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to load images';
+          console.error("Failed to load images:", error);
+          toast.error(`Failed to load images: ${errorMessage}`);
+        } finally {
+          setLoading(false);
         }
-      }
-    }, 100); // Small delay to allow zustand hydration
+      };
 
-    return () => clearTimeout(timer);
-  }, [getImages, setImages, setLoading, images.length, loading, hasInitialized]);
+      fetchImages();
+    }
+  }, [getImages, setImages, setLoading, images.length, loading]);
 
   const handleSearch = useCallback(
     (term: string) => {
