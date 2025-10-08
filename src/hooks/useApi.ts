@@ -95,17 +95,16 @@ export const useApi = () => {
       throw new Error('Image must be 10MB or less');
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production-28e3.up.railway.app';
 
-    // Step 1: Request presigned upload URL from backend
-    const presignResponse = await fetch(`${baseUrl}/api/images/presign`, {
+    // Step 1: Request presigned upload URL from unified backend meme endpoint
+    const presignResponse = await fetch(`${baseUrl}/api/memes/presign`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${extendedSession.accessToken}`,
       },
       body: JSON.stringify({
-        type: 'meme',
         filename: file.name,
         mimeType: file.type,
         size: file.size,
@@ -136,11 +135,10 @@ export const useApi = () => {
       throw new Error(`S3 upload failed with status ${uploadResponse.status}`);
     }
 
-    // Step 3: Return metadata with view URL
-    const viewUrl = `${baseUrl}/api/images/view/${key}`;
+    // Step 3: Return metadata (unified backend returns direct S3 URLs for memes)
     return {
       id: key,
-      url: viewUrl,
+      url: metadata.url,
       originalName: key,
       size: file.size,
       uploadDate: new Date().toISOString(),
@@ -149,15 +147,14 @@ export const useApi = () => {
   }, [extendedSession]);
 
   const deleteImage = useCallback(async (imageId: string): Promise<ApiResponse> => {
-    // URL encode the imageId to handle slashes (e.g., memes/filename.jpg)
-    const encodedId = encodeURIComponent(imageId);
-    return apiCall(`/images/${encodedId}`, { method: 'DELETE' });
+    // Delete from meme endpoint in unified backend
+    return apiCall(`/memes/${imageId}`, { method: 'DELETE' });
   }, [apiCall]);
 
   const getImages = useCallback(async (): Promise<Image[]> => {
-    const response = await apiCall('/images');
+    const response = await apiCall('/memes');
     
-    // Backend returns direct array, so return it directly
+    // Unified backend returns meme array
     if (Array.isArray(response)) {
       return response as Image[];
     }
@@ -167,12 +164,12 @@ export const useApi = () => {
   }, [apiCall]);
 
   const downloadImage = useCallback(async (imageId: string): Promise<Blob> => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production-28e3.up.railway.app';
     
     // URL encode the imageId to handle slashes
     const encodedId = encodeURIComponent(imageId);
     
-    const response = await fetch(`${baseUrl}/api/images/${encodedId}/download`, {
+    const response = await fetch(`${baseUrl}/api/memes/${encodedId}/download`, {
       headers: {
         Authorization: `Bearer ${extendedSession?.accessToken}`,
       },
@@ -186,16 +183,13 @@ export const useApi = () => {
   }, [extendedSession]);
 
   const editImage = useCallback(async (imageId: string, data: { fileName?: string; description?: string; category?: string }): Promise<ApiResponse> => {
-    // URL encode the imageId to handle slashes (same as delete)
-    const encodedId = encodeURIComponent(imageId);
-    
     // Transform fileName to filename for the API
     const apiData = {
       filename: data.fileName,
       description: data.description,
       category: data.category
     };
-    return apiCall(`/images/${encodedId}`, {
+    return apiCall(`/memes/${imageId}`, {
       method: 'PUT',
       body: JSON.stringify(apiData),
     });

@@ -70,10 +70,9 @@ export default function Home() {
     try {
       setDownloadingImageId(image.id);
       
-      // Navigate directly to download endpoint
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
-      const encodedId = encodeURIComponent(image.id);
-      const downloadUrl = `${baseUrl}/api/images/${encodedId}/download`;
+      // Navigate directly to unified backend meme download endpoint
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production-28e3.up.railway.app';
+      const downloadUrl = `${baseUrl}/api/memes/${image.id}/download`;
       
       // Simply navigate to the download URL - browser will download the file
       window.location.href = downloadUrl;
