@@ -137,17 +137,17 @@ export const useImageStore = create<ImageState>()(
           images: state.images,
           searchTerm: state.searchTerm,
         }),
-        // Use sessionStorage instead of localStorage for tab persistence only
+        // Use localStorage for better persistence across navigation
         storage: {
           getItem: (name) => {
-            const str = sessionStorage.getItem(name);
+            const str = localStorage.getItem(name);
             return str ? JSON.parse(str) : null;
           },
           setItem: (name, value) => {
-            sessionStorage.setItem(name, JSON.stringify(value));
+            localStorage.setItem(name, JSON.stringify(value));
           },
           removeItem: (name) => {
-            sessionStorage.removeItem(name);
+            localStorage.removeItem(name);
           },
         },
       }
