@@ -49,7 +49,7 @@ export const useApi = () => {
 
   const apiCall = useCallback(async (endpoint: string, options: ApiCallOptions = {}): Promise<ApiResponse> => {
     // This points to your NestJS backend
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production.up.railway.app';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://cto-backend-production-28e3.up.railway.app';
     
     const config: RequestInit = {
       ...options,
