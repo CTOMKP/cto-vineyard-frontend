@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MoonLoader } from 'react-spinners';
 import { toast } from 'react-toastify';
-import { BarChart3, FileText, DollarSign, Zap, Users } from 'lucide-react';
+import { FileText, DollarSign, Zap, Users } from 'lucide-react';
 
 interface DashboardStats {
   users: { total: number };
@@ -23,20 +23,12 @@ export default function AdminDashboard() {
 
   const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
-    } else if (status === 'authenticated') {
-      loadStats();
-    }
-  }, [status, router]);
-
-  const loadStats = async () => {
+  const loadStats = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`${baseUrl}/api/admin/dashboard/stats`, {
         headers: {
-          Authorization: `Bearer ${(session as any)?.accessToken}`,
+          Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
         },
       });
 
@@ -52,7 +44,15 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session, baseUrl]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+    } else if (status === 'authenticated') {
+      loadStats();
+    }
+  }, [status, router, loadStats]);
 
   if (status === 'loading' || loading) {
     return (

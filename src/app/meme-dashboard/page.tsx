@@ -14,7 +14,6 @@ export default function ImageDashboard() {
   const { data: session, status } = useSession();
   const { uploadImage, deleteImage, getImages, editImage, isAuthenticated } = useApi();
   const { 
-    images, 
     filteredImages, 
     searchTerm, 
     loading: loadingImages, 

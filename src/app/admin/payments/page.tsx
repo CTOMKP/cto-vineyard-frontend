@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -37,15 +37,7 @@ export default function AdminPayments() {
 
   const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
-    } else if (status === 'authenticated') {
-      loadPayments();
-    }
-  }, [status, router, filterType, filterStatus]);
-
-  const loadPayments = async () => {
+  const loadPayments = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -56,7 +48,7 @@ export default function AdminPayments() {
         `${baseUrl}/api/admin/payments${params.toString() ? '?' + params.toString() : ''}`,
         {
           headers: {
-            Authorization: `Bearer ${(session as any)?.accessToken}`,
+            Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
           },
         }
       );
@@ -73,7 +65,15 @@ export default function AdminPayments() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session, baseUrl, filterType, filterStatus]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+    } else if (status === 'authenticated') {
+      loadPayments();
+    }
+  }, [status, router, loadPayments]);
 
   const totalRevenue = payments
     .filter(p => p.status === 'COMPLETED')
