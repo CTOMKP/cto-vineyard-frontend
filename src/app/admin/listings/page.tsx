@@ -34,14 +34,14 @@ export default function AdminListings() {
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
-  const adminUserId = (session as Record<string, unknown>)?.user?.email || '';
+  const adminUserId = ((session as unknown as Record<string, unknown>)?.user as Record<string, unknown>)?.email || '';
 
   const loadPendingListings = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`${baseUrl}/api/admin/listings/pending`, {
         headers: {
-          Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
+          Authorization: `Bearer ${(session as unknown as Record<string, unknown>)?.accessToken || ''}`,
         },
       });
 
@@ -76,7 +76,7 @@ export default function AdminListings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
+          Authorization: `Bearer ${(session as unknown as Record<string, unknown>)?.accessToken || ''}`,
         },
         body: JSON.stringify({
           listingId,
@@ -108,7 +108,7 @@ export default function AdminListings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
+          Authorization: `Bearer ${(session as unknown as Record<string, unknown>)?.accessToken || ''}`,
         },
         body: JSON.stringify({
           listingId,

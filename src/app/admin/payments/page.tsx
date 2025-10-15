@@ -48,7 +48,7 @@ export default function AdminPayments() {
         `${baseUrl}/api/admin/payments${params.toString() ? '?' + params.toString() : ''}`,
         {
           headers: {
-            Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
+            Authorization: `Bearer ${(session as unknown as Record<string, unknown>)?.accessToken || ''}`,
           },
         }
       );

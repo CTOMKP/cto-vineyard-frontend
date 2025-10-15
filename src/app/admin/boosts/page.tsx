@@ -39,7 +39,7 @@ export default function AdminBoosts() {
     try {
       const response = await fetch(`${baseUrl}/api/admin/ad-boosts/active`, {
         headers: {
-          Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
+          Authorization: `Bearer ${(session as unknown as Record<string, unknown>)?.accessToken || ''}`,
         },
       });
 

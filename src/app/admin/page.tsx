@@ -28,7 +28,7 @@ export default function AdminDashboard() {
     try {
       const response = await fetch(`${baseUrl}/api/admin/dashboard/stats`, {
         headers: {
-          Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
+          Authorization: `Bearer ${(session as unknown as Record<string, unknown>)?.accessToken || ''}`,
         },
       });
 
