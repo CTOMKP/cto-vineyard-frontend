@@ -48,7 +48,7 @@ export const useApi = () => {
   const extendedSession = session as ExtendedSession | null;
 
   const apiCall = useCallback(async (endpoint: string, options: ApiCallOptions = {}): Promise<ApiResponse> => {
-    // This points to your NestJS backend - HARDCODED to prevent env var override
+    // This points to your NestJS backend - Production Railway URL
     const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
     
     const config: RequestInit = {

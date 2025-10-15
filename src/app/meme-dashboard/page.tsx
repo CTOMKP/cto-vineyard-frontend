@@ -306,6 +306,12 @@ export default function ImageDashboard() {
 
         <div className="flex items-center gap-4">
           <span className="hidden sm:block">Welcome, {session?.user?.email}</span>
+          <Link
+            href="/admin"
+            className="text-white px-4 py-2 rounded transition-all duration-300 hover:scale-105 bg-purple-600 hover:bg-purple-700"
+          >
+            🛡️ Admin
+          </Link>
           <button
             onClick={() => signOut()}
             className="text-white px-4 py-2 rounded transition-all duration-300 hover:scale-105"
