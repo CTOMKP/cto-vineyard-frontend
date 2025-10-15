@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MoonLoader } from 'react-spinners';
 import { toast } from 'react-toastify';
-import { ChevronLeft, Check, X } from 'lucide-react';
+import { ChevronLeft, Check, X, FileText } from 'lucide-react';
 
 interface PendingListing {
   id: string;
@@ -34,22 +34,14 @@ export default function AdminListings() {
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
-  const adminUserId = (session as any)?.user?.email || '';
+  const adminUserId = (session as Record<string, unknown>)?.user?.email || '';
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
-    } else if (status === 'authenticated') {
-      loadPendingListings();
-    }
-  }, [status, router]);
-
-  const loadPendingListings = async () => {
+  const loadPendingListings = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`${baseUrl}/api/admin/listings/pending`, {
         headers: {
-          Authorization: `Bearer ${(session as any)?.accessToken}`,
+          Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
         },
       });
 
@@ -65,7 +57,15 @@ export default function AdminListings() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session, baseUrl]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+    } else if (status === 'authenticated') {
+      loadPendingListings();
+    }
+  }, [status, router, loadPendingListings]);
 
   const handleApprove = async (listingId: string) => {
     if (!confirm('Are you sure you want to approve this listing?')) return;
@@ -76,7 +76,7 @@ export default function AdminListings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${(session as any)?.accessToken}`,
+          Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
         },
         body: JSON.stringify({
           listingId,
@@ -108,7 +108,7 @@ export default function AdminListings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${(session as any)?.accessToken}`,
+          Authorization: `Bearer ${(session as Record<string, unknown>)?.accessToken || ''}`,
         },
         body: JSON.stringify({
           listingId,
