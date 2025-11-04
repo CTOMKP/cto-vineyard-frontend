@@ -117,7 +117,8 @@ export const useApi = () => {
       throw new Error(`Failed to get upload URL: ${presignResponse.status}`);
     }
 
-    const { uploadUrl, key, metadata } = await presignResponse.json();
+    const presignData = await presignResponse.json();
+    const { uploadUrl, key, metadata, memeId } = presignData;
     if (!uploadUrl || !key) {
       throw new Error('Invalid presign response from server');
     }

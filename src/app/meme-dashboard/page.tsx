@@ -120,8 +120,24 @@ export default function ImageDashboard() {
 
         const uploadedImage = await uploadImage(file);
         
-        // Add to store
-        addImage(uploadedImage);
+        // The uploadImage already returns CloudFront URL, but ensure it's transformed
+        const imageWithCloudFrontUrl = {
+          ...uploadedImage,
+          url: getCloudFrontUrl(uploadedImage.url),
+        };
+        
+        console.log('Uploaded image:', uploadedImage);
+        console.log('CloudFront URL:', imageWithCloudFrontUrl.url);
+        console.log('Image ID:', imageWithCloudFrontUrl.id);
+        
+        // Add to store - this will immediately show the image
+        addImage(imageWithCloudFrontUrl);
+        
+        // Reload images to ensure we have the latest from backend
+        // This ensures the image appears even if there's a delay
+        setTimeout(() => {
+          loadImages();
+        }, 1000);
         
         // Update status to success
         setUploadProgress(prev => ({
