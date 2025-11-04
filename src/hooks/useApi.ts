@@ -135,15 +135,21 @@ export const useApi = () => {
       throw new Error(`S3 upload failed with status ${uploadResponse.status}`);
     }
 
-    // Step 3: Return metadata (unified backend returns direct S3 URLs for memes)
-    // Note: The backend should return CloudFront URLs, but we'll handle both cases
+    // Step 3: Transform URL to CloudFront (backend may return presigned URLs)
+    // The backend returns 'key' which is the S3 key, use that to build CloudFront URL
+    const { getCloudFrontUrl } = await import('../lib/image-url-helper');
+    
+    // Build CloudFront URL from S3 key (key is the S3 path like 'user-uploads/10/meme/1762218709563_joker.jpg')
+    const cloudfrontUrl = getCloudFrontUrl(key);
+    
     const response = {
       id: key,
-      url: metadata.url || `https://ctom-bucket-backup.s3.eu-north-1.amazonaws.com/${key}`,
-      originalName: key,
+      url: cloudfrontUrl, // Always use CloudFront URL
+      originalName: metadata.originalName || metadata.filename || file.name,
       size: file.size,
       uploadDate: new Date().toISOString(),
-      ...metadata,
+      filename: metadata.filename || file.name,
+      mimeType: metadata.mimeType || file.type,
     };
     
     console.log('Upload response:', response);
