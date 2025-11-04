@@ -72,28 +72,31 @@ export default function Home() {
     try {
       setDownloadingImageId(image.id);
       
-      // First check if image exists by trying to fetch it
-      const imageUrl = getCloudFrontUrl(image.url);
-      const imageResponse = await fetch(imageUrl, { method: 'HEAD' });
+      // Navigate directly to unified backend meme download endpoint
+      // Backend will verify file exists in S3 before generating presigned URL
+      const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
+      const downloadUrl = `${baseUrl}/api/memes/${encodeURIComponent(image.id)}/download`;
       
-      if (!imageResponse.ok) {
+      // Try to check if file exists first (backend will return 404 if file missing)
+      const checkResponse = await fetch(downloadUrl, { 
+        method: 'GET',
+        redirect: 'manual' // Don't follow redirect, just check status
+      });
+      
+      // If 404, file doesn't exist
+      if (checkResponse.status === 404) {
         toast.error('Image not found. It may have been deleted.');
-        setDownloadingImageId(null);
-        // Remove from display
         setFailedImageIds(prev => new Set(prev).add(image.id));
+        setDownloadingImageId(null);
         return;
       }
       
-      // Navigate directly to unified backend meme download endpoint
-      const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
-      const downloadUrl = `${baseUrl}/api/v1/memes/${image.id}/download`;
-      
-      // Simply navigate to the download URL - browser will download the file
+      // If redirect (3xx), file exists - trigger actual download
+      // Otherwise, try direct download
       window.location.href = downloadUrl;
-      
       toast.success('Download started!');
       
-      setTimeout(() => setDownloadingImageId(null), 1000);
+      setTimeout(() => setDownloadingImageId(null), 2000);
     } catch (error) {
       console.error('Download failed:', error);
       toast.error('Failed to download image. It may not exist.');
