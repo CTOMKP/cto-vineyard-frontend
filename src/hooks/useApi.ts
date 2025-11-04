@@ -148,11 +148,14 @@ export const useApi = () => {
     // Verify upload succeeded - try to access the file via CloudFront after a short delay
     console.log('S3 upload appears successful, verifying file exists...');
     
+    // Step 3: Transform URL to CloudFront (backend may return presigned URLs)
+    // The backend returns 'key' which is the S3 key, use that to build CloudFront URL
+    const { getCloudFrontUrl } = await import('../lib/image-url-helper');
+    
     // Wait a moment for S3 to propagate
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Try to verify file exists by checking CloudFront URL
-    const { getCloudFrontUrl } = await import('../lib/image-url-helper');
     const verifyUrl = getCloudFrontUrl(key);
     console.log('Verifying file at:', verifyUrl);
     
@@ -167,10 +170,6 @@ export const useApi = () => {
     } catch (verifyError) {
       console.warn('⚠️ Could not verify file (may be CORS or network issue):', verifyError);
     }
-
-    // Step 3: Transform URL to CloudFront (backend may return presigned URLs)
-    // The backend returns 'key' which is the S3 key, use that to build CloudFront URL
-    const { getCloudFrontUrl } = await import('../lib/image-url-helper');
     
     // Build CloudFront URL from S3 key (key is the S3 path like 'user-uploads/10/meme/1762218709563_joker.jpg')
     const cloudfrontUrl = getCloudFrontUrl(key);
