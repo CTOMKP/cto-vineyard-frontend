@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.922.0",
+    "@aws-sdk/s3-request-presigner": "^3.922.0",
     "@types/react-toastify": "^4.0.2",
     "lucide-react": "^0.542.0",
     "next": "15.5.2",

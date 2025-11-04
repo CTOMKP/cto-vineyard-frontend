@@ -7,6 +7,7 @@ import { useApi } from "../hooks/useApi";
 import { MoonLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import { useImageStore, ImageData } from "../stores/imageStore";
+import { getCloudFrontUrl } from "../lib/image-url-helper";
 
 export default function Home() {
   const { getImages } = useApi();
@@ -21,6 +22,7 @@ export default function Home() {
   } = useImageStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null);
+  const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     // Only fetch if we don't have images already (prevents tab-switch refresh)
@@ -66,9 +68,21 @@ export default function Home() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleDownload = useCallback((image: ImageData) => {
+  const handleDownload = useCallback(async (image: ImageData) => {
     try {
       setDownloadingImageId(image.id);
+      
+      // First check if image exists by trying to fetch it
+      const imageUrl = getCloudFrontUrl(image.url);
+      const imageResponse = await fetch(imageUrl, { method: 'HEAD' });
+      
+      if (!imageResponse.ok) {
+        toast.error('Image not found. It may have been deleted.');
+        setDownloadingImageId(null);
+        // Remove from display
+        setFailedImageIds(prev => new Set(prev).add(image.id));
+        return;
+      }
       
       // Navigate directly to unified backend meme download endpoint
       const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
@@ -82,8 +96,10 @@ export default function Home() {
       setTimeout(() => setDownloadingImageId(null), 1000);
     } catch (error) {
       console.error('Download failed:', error);
-      toast.error('Failed to download image');
+      toast.error('Failed to download image. It may not exist.');
       setDownloadingImageId(null);
+      // Remove from display
+      setFailedImageIds(prev => new Set(prev).add(image.id));
     }
   }, []);
 
@@ -140,20 +156,30 @@ export default function Home() {
       {/* Images Grid */}
       <div className="flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4  2xl:grid-cols-5 gap-4">
-          {filteredImages.map((image) => (
+          {filteredImages
+            .filter(image => !failedImageIds.has(image.id))
+            .map((image, index) => (
             <div
               key={image.id}
               className="relative group size-[300px] sm:size-[200px] lg:size-[250px]"
             >
                 <Image
-                  src={image.url}
+                  src={getCloudFrontUrl(image.url)}
                   alt={image.filename || image.originalName}
                   fill
                   className="object-cover border border-[#262626] rounded-[6px] hover:scale-105 transition-transform duration-200 cursor-pointer"
                   unoptimized={true}
+                  priority={index < 12}
+                  loading={index < 12 ? "eager" : "lazy"}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   onError={(e) => {
+                    // Hide the entire card when image fails to load
+                    setFailedImageIds(prev => new Set(prev).add(image.id));
                     const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
+                    const card = target.closest('.relative.group');
+                    if (card) {
+                      (card as HTMLElement).style.display = 'none';
+                    }
                   }}
                 />
               {/* Always visible overlay */}

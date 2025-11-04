@@ -9,6 +9,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useImageStore, ImageData } from '../../stores/imageStore';
+import { getCloudFrontUrl } from '../../lib/image-url-helper';
 
 export default function ImageDashboard() {
   const { data: session, status } = useSession();
@@ -39,6 +40,7 @@ export default function ImageDashboard() {
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const [editingImageId, setEditingImageId] = useState<string | null>(null);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [failedImageIds, setFailedImageIds] = useState<Set<string>>(new Set());
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -404,17 +406,28 @@ export default function ImageDashboard() {
       {/* Images List */}
       {!loadingImages && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {filteredImages.map((image) => (
+          {filteredImages
+            .filter(image => !failedImageIds.has(image.id))
+            .map((image, index) => (
             <div key={image.id} className="border border-[#262626] rounded-lg p-3 bg-[#1a1a1a]">
               <div className="aspect-square bg-gray-100 rounded mb-3 flex items-center justify-center overflow-hidden relative">
                 <Image
-                  src={image.url}
+                  src={getCloudFrontUrl(image.url)}
                   alt={image.filename || image.originalName}
                   fill
                   className="object-cover"
                   unoptimized={true}
-                  onError={() => {
-                    // Handle error by showing fallback
+                  priority={index < 12}
+                  loading={index < 12 ? "eager" : "lazy"}
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                  onError={(e) => {
+                    // Hide the entire card when image fails to load
+                    setFailedImageIds(prev => new Set(prev).add(image.id));
+                    const target = e.target as HTMLImageElement;
+                    const card = target.closest('.border');
+                    if (card) {
+                      (card as HTMLElement).style.display = 'none';
+                    }
                   }}
                 />
               </div>
@@ -430,7 +443,7 @@ export default function ImageDashboard() {
                 </p>
                 <div className="flex gap-1">
                   <a
-                    href={image.url}
+                    href={getCloudFrontUrl(image.url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded text-xs flex-1 text-center transition-colors"
