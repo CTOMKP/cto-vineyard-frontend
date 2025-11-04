@@ -86,7 +86,7 @@ export default function Home() {
       
       // Navigate directly to unified backend meme download endpoint
       const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
-      const downloadUrl = `${baseUrl}/api/memes/${image.id}/download`;
+      const downloadUrl = `${baseUrl}/api/v1/memes/${image.id}/download`;
       
       // Simply navigate to the download URL - browser will download the file
       window.location.href = downloadUrl;

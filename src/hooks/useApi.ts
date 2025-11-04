@@ -136,32 +136,53 @@ export const useApi = () => {
     }
 
     // Step 3: Return metadata (unified backend returns direct S3 URLs for memes)
-    return {
+    // Note: The backend should return CloudFront URLs, but we'll handle both cases
+    const response = {
       id: key,
-      url: metadata.url,
+      url: metadata.url || `https://ctom-bucket-backup.s3.eu-north-1.amazonaws.com/${key}`,
       originalName: key,
       size: file.size,
       uploadDate: new Date().toISOString(),
       ...metadata,
     };
+    
+    console.log('Upload response:', response);
+    return response;
   }, [extendedSession]);
 
   const deleteImage = useCallback(async (imageId: string): Promise<ApiResponse> => {
     // Delete from meme endpoint in unified backend
-    return apiCall(`/memes/${imageId}`, { method: 'DELETE' });
-  }, [apiCall]);
-
-  const getImages = useCallback(async (): Promise<Image[]> => {
-    const response = await apiCall('/memes');
+    const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
+    const response = await fetch(`${baseUrl}/api/memes/${imageId}`, {
+      method: 'DELETE',
+      headers: extendedSession?.accessToken ? {
+        Authorization: `Bearer ${extendedSession.accessToken}`,
+      } : {},
+    });
     
-    // Unified backend returns meme array
-    if (Array.isArray(response)) {
-      return response as Image[];
+    if (!response.ok) {
+      throw new Error(`Failed to delete image: ${response.statusText}`);
     }
     
-    // Fallback for wrapped response format
-    return (response.data || response) as Image[];
-  }, [apiCall]);
+    return await response.json();
+  }, [extendedSession]);
+
+  const getImages = useCallback(async (): Promise<Image[]> => {
+    const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
+    const response = await fetch(`${baseUrl}/api/memes`, {
+      headers: extendedSession?.accessToken ? {
+        Authorization: `Bearer ${extendedSession.accessToken}`,
+      } : {},
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch images: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    // Handle both direct array response and wrapped response
+    return Array.isArray(data) ? data : (data.data || data);
+  }, [extendedSession]);
 
   const downloadImage = useCallback(async (imageId: string): Promise<Blob> => {
     const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
