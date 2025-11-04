@@ -143,15 +143,21 @@ export const useApi = () => {
     // Build CloudFront URL from S3 key (key is the S3 path like 'user-uploads/10/meme/1762218709563_joker.jpg')
     const cloudfrontUrl = getCloudFrontUrl(key);
     
+    // Use memeId (database ID) from backend, so it matches the ID format from getAllMemes
+    // This ensures the uploaded image matches the format when we reload from backend
+    const imageId = memeId || metadata?.id || key;
+    
     const response = {
-      id: key,
+      id: imageId, // Use database ID (memeId) so it matches getAllMemes response format
       url: cloudfrontUrl, // Always use CloudFront URL
-      originalName: metadata.originalName || metadata.filename || file.name,
+      originalName: metadata?.originalName || metadata?.filename || file.name,
       size: file.size,
       uploadDate: new Date().toISOString(),
-      filename: metadata.filename || file.name,
-      mimeType: metadata.mimeType || file.type,
+      filename: metadata?.filename || file.name,
+      mimeType: metadata?.mimeType || file.type,
     };
+    
+    console.log('Using memeId:', memeId, 'metadata.id:', metadata?.id, 'final imageId:', imageId);
     
     console.log('Upload response:', response);
     return response;
