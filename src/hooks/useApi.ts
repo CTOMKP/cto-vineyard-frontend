@@ -145,8 +145,28 @@ export const useApi = () => {
       throw new Error(`S3 upload failed with status ${uploadResponse.status}: ${errorText}`);
     }
     
-    // Verify upload succeeded - check if we can access the file
-    console.log('S3 upload appears successful, verifying...');
+    // Verify upload succeeded - try to access the file via CloudFront after a short delay
+    console.log('S3 upload appears successful, verifying file exists...');
+    
+    // Wait a moment for S3 to propagate
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Try to verify file exists by checking CloudFront URL
+    const { getCloudFrontUrl } = await import('../lib/image-url-helper');
+    const verifyUrl = getCloudFrontUrl(key);
+    console.log('Verifying file at:', verifyUrl);
+    
+    try {
+      const verifyResponse = await fetch(verifyUrl, { method: 'HEAD' });
+      console.log('File verification response:', verifyResponse.status, verifyResponse.statusText);
+      if (verifyResponse.status === 404) {
+        console.warn('⚠️ WARNING: File uploaded but not found at CloudFront URL - may be S3 propagation delay or wrong bucket');
+      } else if (verifyResponse.ok) {
+        console.log('✅ File verified and accessible via CloudFront');
+      }
+    } catch (verifyError) {
+      console.warn('⚠️ Could not verify file (may be CORS or network issue):', verifyError);
+    }
 
     // Step 3: Transform URL to CloudFront (backend may return presigned URLs)
     // The backend returns 'key' which is the S3 key, use that to build CloudFront URL
