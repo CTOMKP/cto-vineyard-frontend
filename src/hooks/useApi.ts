@@ -124,6 +124,10 @@ export const useApi = () => {
     }
 
     // Step 2: Upload directly to S3 using presigned URL
+    console.log('Uploading to S3:', uploadUrl.substring(0, 100) + '...');
+    console.log('S3 Key:', key);
+    console.log('Full presigned URL bucket check:', uploadUrl.includes('ctom-bucket-backup') ? 'CORRECT BUCKET' : 'WRONG BUCKET - URL contains: ' + uploadUrl.match(/\.s3\.([^.]+)\.amazonaws\.com/)?.[1] || 'unknown');
+    
     const uploadResponse = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
@@ -132,9 +136,17 @@ export const useApi = () => {
       body: file,
     });
 
+    console.log('S3 upload response status:', uploadResponse.status, uploadResponse.statusText);
+    console.log('S3 upload response headers:', Object.fromEntries(uploadResponse.headers.entries()));
+    
     if (!uploadResponse.ok) {
-      throw new Error(`S3 upload failed with status ${uploadResponse.status}`);
+      const errorText = await uploadResponse.text();
+      console.error('S3 upload failed:', errorText);
+      throw new Error(`S3 upload failed with status ${uploadResponse.status}: ${errorText}`);
     }
+    
+    // Verify upload succeeded - check if we can access the file
+    console.log('S3 upload appears successful, verifying...');
 
     // Step 3: Transform URL to CloudFront (backend may return presigned URLs)
     // The backend returns 'key' which is the S3 key, use that to build CloudFront URL
