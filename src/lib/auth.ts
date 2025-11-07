@@ -41,7 +41,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const response = await fetch(`https://cto-backend-production-28e3.up.railway.app/api/auth/login`, {
+          const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://github.useguidr.com';
+          const response = await fetch(`${backendUrl}/api/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -118,7 +119,8 @@ export const authOptions: NextAuthOptions = {
 
 async function refreshAccessToken(token: ExtendedToken): Promise<ExtendedToken> {
   try {
-    const response = await fetch(`https://cto-backend-production-28e3.up.railway.app/api/auth/refresh`, {
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://github.useguidr.com';
+    const response = await fetch(`${backendUrl}/api/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
