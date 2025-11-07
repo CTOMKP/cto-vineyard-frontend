@@ -1,12 +1,6 @@
 import { useSession } from 'next-auth/react';
 import { useCallback } from 'react';
 
-interface ApiCallOptions extends RequestInit {
-  headers?: Record<string, string>;
-}
-
-
-
 interface Image {
   id: string;
   url: string;
@@ -43,13 +37,26 @@ interface UploadResponse {
   uploadDate: string;
 }
 
+interface ApiCallOptions extends RequestInit {
+  headers?: Record<string, string>;
+}
+
+const resolveBackendBaseUrl = (): string => {
+  return (
+    process.env.NEXT_INTERNAL_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.NEXT_PUBLIC_BACKEND_URL ||
+    'https://github.useguidr.com'
+  );
+};
+
 export const useApi = () => {
   const { data: session } = useSession();
   const extendedSession = session as ExtendedSession | null;
 
   const apiCall = useCallback(async (endpoint: string, options: ApiCallOptions = {}): Promise<ApiResponse> => {
     // This points to your NestJS backend on Coolify
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://github.useguidr.com';
+    const baseUrl = resolveBackendBaseUrl();
     
     const config: RequestInit = {
       ...options,
@@ -95,7 +102,7 @@ export const useApi = () => {
       throw new Error('Image must be 10MB or less');
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://github.useguidr.com';
+    const baseUrl = resolveBackendBaseUrl();
 
     // Step 1: Request presigned upload URL from unified backend meme endpoint
     const presignResponse = await fetch(`${baseUrl}/api/memes/presign`, {
@@ -196,7 +203,7 @@ export const useApi = () => {
 
   const deleteImage = useCallback(async (imageId: string): Promise<ApiResponse> => {
     // Delete from meme endpoint in unified backend
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://github.useguidr.com';
+    const baseUrl = resolveBackendBaseUrl();
     const response = await fetch(`${baseUrl}/api/memes/${imageId}`, {
       method: 'DELETE',
       headers: extendedSession?.accessToken ? {
@@ -212,7 +219,7 @@ export const useApi = () => {
   }, [extendedSession]);
 
   const getImages = useCallback(async (): Promise<Image[]> => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://github.useguidr.com';
+    const baseUrl = resolveBackendBaseUrl();
     const response = await fetch(`${baseUrl}/api/memes`, {
       headers: extendedSession?.accessToken ? {
         Authorization: `Bearer ${extendedSession.accessToken}`,
@@ -229,7 +236,7 @@ export const useApi = () => {
   }, [extendedSession]);
 
   const downloadImage = useCallback(async (imageId: string): Promise<Blob> => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://github.useguidr.com';
+    const baseUrl = resolveBackendBaseUrl();
     
     // URL encode the imageId to handle slashes
     const encodedId = encodeURIComponent(imageId);

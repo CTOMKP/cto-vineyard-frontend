@@ -27,6 +27,15 @@ interface ExtendedSession extends Session {
   error?: string;
 }
 
+const resolveBackendUrl = (): string => {
+  return (
+    process.env.NEXT_INTERNAL_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    process.env.NEXT_PUBLIC_BACKEND_URL ||
+    'https://github.useguidr.com'
+  );
+};
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -41,7 +50,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://github.useguidr.com';
+          const backendUrl = resolveBackendUrl();
           const response = await fetch(`${backendUrl}/api/auth/login`, {
             method: 'POST',
             headers: {
@@ -119,7 +128,7 @@ export const authOptions: NextAuthOptions = {
 
 async function refreshAccessToken(token: ExtendedToken): Promise<ExtendedToken> {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://github.useguidr.com';
+    const backendUrl = resolveBackendUrl();
     const response = await fetch(`${backendUrl}/api/auth/refresh`, {
       method: 'POST',
       headers: {
