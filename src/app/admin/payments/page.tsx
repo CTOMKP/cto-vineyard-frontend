@@ -35,7 +35,7 @@ export default function AdminPayments() {
   const [filterType, setFilterType] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<string>('');
 
-  const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://api.ctomarketplace.com';
 
   const loadPayments = useCallback(async () => {
     setLoading(true);

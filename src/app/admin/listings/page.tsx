@@ -33,7 +33,7 @@ export default function AdminListings() {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://api.ctomarketplace.com';
   const adminUserId = ((session as unknown as Record<string, unknown>)?.user as Record<string, unknown>)?.email || '';
 
   const loadPendingListings = useCallback(async () => {

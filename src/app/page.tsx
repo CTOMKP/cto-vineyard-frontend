@@ -74,7 +74,7 @@ export default function Home() {
       
       // Navigate directly to unified backend meme download endpoint
       // Backend will verify file exists in S3 before generating presigned URL
-      const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://api.ctomarketplace.com';
       const downloadUrl = `${baseUrl}/api/memes/${encodeURIComponent(image.id)}/download`;
       
       // Try to check if file exists first (backend will return 404 if file missing)

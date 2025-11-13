@@ -32,7 +32,7 @@ const resolveBackendUrl = (): string => {
     process.env.NEXT_INTERNAL_API_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
     process.env.NEXT_PUBLIC_BACKEND_URL ||
-    'https://github.useguidr.com'
+    'https://api.ctomarketplace.com'
   );
 };
 

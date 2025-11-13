@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const baseUrl = 'https://cto-backend-production-28e3.up.railway.app';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://api.ctomarketplace.com';
 
   const loadStats = useCallback(async () => {
     setLoading(true);
