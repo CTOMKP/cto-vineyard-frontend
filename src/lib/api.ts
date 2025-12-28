@@ -18,7 +18,7 @@ class ApiClient {
   private token: string | null = null;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://github.useguidr.com';
+    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.ctomarketplace.com';
   }
 
   /**

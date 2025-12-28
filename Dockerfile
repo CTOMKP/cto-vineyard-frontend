@@ -25,7 +25,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Build arguments with defaults for Coolify
-ARG NEXT_PUBLIC_API_URL=https://github.useguidr.com
+ARG NEXT_PUBLIC_API_URL=https://api.ctomarketplace.com
 ARG NEXT_PUBLIC_CLOUDFRONT_DOMAIN=d2cjbd1iqkwr9j.cloudfront.net
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_CLOUDFRONT_DOMAIN=$NEXT_PUBLIC_CLOUDFRONT_DOMAIN
