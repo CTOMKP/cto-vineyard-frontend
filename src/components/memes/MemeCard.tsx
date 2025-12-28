@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Download } from 'lucide-react';
+import { Download, ImageOff } from 'lucide-react';
 import type { Meme } from '@/types';
 import { Spinner } from '@/components/ui/Spinner';
 
@@ -32,8 +32,16 @@ export function MemeCard({ meme, priority = false }: MemeCardProps) {
     }
   };
 
+  // Show placeholder for broken images
   if (imageError) {
-    return null; // Hide card if image fails to load
+    return (
+      <div className="relative group w-full aspect-square bg-[#1a1a1a] border border-[#262626] rounded-lg flex flex-col items-center justify-center">
+        <ImageOff className="w-12 h-12 text-gray-500 mb-2" />
+        <span className="text-gray-500 text-sm text-center px-2 truncate w-full">
+          {meme.filename || meme.originalName}
+        </span>
+      </div>
+    );
   }
 
   return (
