@@ -42,6 +42,7 @@ export function MemeCard({ meme, priority = false }: MemeCardProps) {
         src={meme.url}
         alt={meme.filename || meme.originalName}
         fill
+        unoptimized
         className="object-cover border border-[#262626] rounded-lg hover:scale-105 transition-transform duration-200 cursor-pointer"
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         priority={priority}
