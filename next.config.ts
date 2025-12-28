@@ -17,18 +17,12 @@ const nextConfig: NextConfig = {
         hostname: '*.s3.*.amazonaws.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 's3.*.amazonaws.com',
+        pathname: '/**',
+      },
     ],
-  },
-  
-  // Optimize bundle size
-  experimental: {
-    optimizePackageImports: ['lucide-react'],
-  },
-  
-  // Environment variables validation
-  env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    NEXT_PUBLIC_CLOUDFRONT_DOMAIN: process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN || 'd2cjbd1iqkwr9j.cloudfront.net',
   },
 };
 
