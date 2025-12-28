@@ -1,0 +1,12 @@
+# Nixpacks configuration for Coolify
+# Specifies Node.js 20 which is required for Next.js 16
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm-9_x"]
+
+[phases.build]
+cmds = ["npm ci", "npm run build"]
+
+[start]
+cmd = "npm start"
+
