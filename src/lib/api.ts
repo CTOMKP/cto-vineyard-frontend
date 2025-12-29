@@ -85,7 +85,11 @@ class ApiClient {
       throw new Error(errorText || `Request failed: ${response.status}`);
     }
 
-    return response.json();
+    const responseData = await response.json();
+    
+    // Backend wraps response in { data: {...}, statusCode, timestamp }
+    // If 'data' is present, return it, otherwise return the whole object
+    return responseData.data !== undefined ? responseData.data : responseData;
   }
 
   // ===========================
