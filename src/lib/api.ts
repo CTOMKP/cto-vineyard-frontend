@@ -3,6 +3,8 @@
  * Single source of truth for all backend communication
  */
 
+/// <reference types="node" />
+
 import type { 
   Meme, 
   PresignRequest, 
@@ -24,11 +26,15 @@ class ApiClient {
     
     if (typeof window === 'undefined' && internalUrl) {
       this.baseUrl = internalUrl;
-      console.log('🌐 [ApiClient] Using internal backend URL:', this.baseUrl);
+      console.log('🌐 [ApiClient] Server-side: Using internal backend URL:', this.baseUrl);
+    } else if (typeof window !== 'undefined') {
+      // Client-side: Use relative URL to trigger the Next.js rewrite/proxy
+      this.baseUrl = ''; 
+      console.log('🌐 [ApiClient] Client-side: Using relative proxy URL');
     } else {
       this.baseUrl = publicUrl || 'https://api.ctomarketplace.com';
       if (typeof window === 'undefined') {
-        console.log('🌐 [ApiClient] Using public backend URL:', this.baseUrl);
+        console.log('🌐 [ApiClient] Server-side: Using public backend URL:', this.baseUrl);
       }
     }
   }
