@@ -18,7 +18,19 @@ class ApiClient {
   private token: string | null = null;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.ctomarketplace.com';
+    // If we're on the server, prioritize the internal API URL for faster, more reliable connection
+    const internalUrl = process.env.NEXT_INTERNAL_API_URL;
+    const publicUrl = process.env.NEXT_PUBLIC_API_URL;
+    
+    if (typeof window === 'undefined' && internalUrl) {
+      this.baseUrl = internalUrl;
+      console.log('🌐 [ApiClient] Using internal backend URL:', this.baseUrl);
+    } else {
+      this.baseUrl = publicUrl || 'https://api.ctomarketplace.com';
+      if (typeof window === 'undefined') {
+        console.log('🌐 [ApiClient] Using public backend URL:', this.baseUrl);
+      }
+    }
   }
 
   /**
