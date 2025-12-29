@@ -3,8 +3,6 @@
  * Single source of truth for all backend communication
  */
 
-/// <reference types="node" />
-
 import type { 
   Meme, 
   PresignRequest, 
