@@ -3,6 +3,8 @@
  * Single source of truth for all backend communication
  */
 
+declare const process: { env: Record<string, string | undefined> };
+
 import type { 
   Meme, 
   PresignRequest, 
