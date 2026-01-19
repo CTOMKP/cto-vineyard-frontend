@@ -13,6 +13,9 @@ import toast from 'react-hot-toast';
 export const adminKeys = {
   stats: ['admin', 'stats'] as const,
   listings: ['admin', 'listings'] as const,
+  publishedListings: ['admin', 'listings', 'published'] as const,
+  rejectedListings: ['admin', 'listings', 'rejected'] as const,
+  users: ['admin', 'users'] as const,
   payments: ['admin', 'payments'] as const,
   boosts: ['admin', 'boosts'] as const,
 };
@@ -41,15 +44,50 @@ export function usePendingListings() {
 }
 
 /**
+ * Hook to fetch published listings
+ */
+export function usePublishedListings() {
+  return useQuery({
+    queryKey: adminKeys.publishedListings,
+    queryFn: () => api.getPublishedListings(),
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * Hook to fetch rejected listings
+ */
+export function useRejectedListings() {
+  return useQuery({
+    queryKey: adminKeys.rejectedListings,
+    queryFn: () => api.getRejectedListings(),
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * Hook to fetch admin users
+ */
+export function useAdminUsers(filters?: { search?: string; limit?: number; offset?: number }) {
+  return useQuery({
+    queryKey: [...adminKeys.users, filters],
+    queryFn: () => api.getUsers(filters),
+    staleTime: 30_000,
+  });
+}
+
+/**
  * Hook to approve a listing
  */
 export function useApproveListing() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => api.approveListing(id),
+    mutationFn: (payload: { listingId: string; adminUserId: string }) =>
+      api.approveListing(payload.listingId, payload.adminUserId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.listings });
+      queryClient.invalidateQueries({ queryKey: adminKeys.publishedListings });
       queryClient.invalidateQueries({ queryKey: adminKeys.stats });
       toast.success('Listing approved');
     },
@@ -66,8 +104,8 @@ export function useRejectListing() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
-      api.rejectListing(id, reason),
+    mutationFn: ({ listingId, reason, adminUserId }: { listingId: string; reason: string; adminUserId: string }) =>
+      api.rejectListing(listingId, adminUserId, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: adminKeys.listings });
       queryClient.invalidateQueries({ queryKey: adminKeys.stats });

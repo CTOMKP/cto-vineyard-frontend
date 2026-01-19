@@ -12,7 +12,8 @@ import type {
   AdminStats, 
   Listing, 
   Payment, 
-  AdBoost 
+  AdBoost,
+  AdminUser
 } from '@/types';
 
 class ApiClient {
@@ -201,19 +202,52 @@ class ApiClient {
   }
 
   /**
+   * Get published listings
+   */
+  async getPublishedListings(): Promise<Listing[]> {
+    const data = await this.request<{ listings: Listing[] }>('/api/v1/admin/listings/published');
+    return data.listings || [];
+  }
+
+  /**
+   * Get rejected listings
+   */
+  async getRejectedListings(): Promise<Listing[]> {
+    const data = await this.request<{ listings: Listing[] }>('/api/v1/admin/listings/rejected');
+    return data.listings || [];
+  }
+
+  /**
+   * Get users list
+   */
+  async getUsers(params?: { search?: string; limit?: number; offset?: number }): Promise<AdminUser[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.offset) searchParams.set('offset', String(params.offset));
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
+
+    const data = await this.request<{ users: AdminUser[] }>(`/api/v1/admin/users${query}`);
+    return data.users || [];
+  }
+
+  /**
    * Approve a listing
    */
-  async approveListing(id: string): Promise<void> {
-    await this.request(`/api/v1/admin/listings/${id}/approve`, { method: 'POST' });
+  async approveListing(listingId: string, adminUserId: string): Promise<void> {
+    await this.request('/api/v1/admin/listings/approve', {
+      method: 'POST',
+      body: JSON.stringify({ listingId, adminUserId }),
+    });
   }
 
   /**
    * Reject a listing
    */
-  async rejectListing(id: string, reason?: string): Promise<void> {
-    await this.request(`/api/v1/admin/listings/${id}/reject`, {
+  async rejectListing(listingId: string, adminUserId: string, reason: string): Promise<void> {
+    await this.request('/api/v1/admin/listings/reject', {
       method: 'POST',
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify({ listingId, adminUserId, reason }),
     });
   }
 
@@ -241,4 +275,3 @@ class ApiClient {
 
 // Singleton instance
 export const api = new ApiClient();
-

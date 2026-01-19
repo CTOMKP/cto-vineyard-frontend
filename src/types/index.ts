@@ -70,12 +70,61 @@ export interface Listing {
   title: string;
   description?: string;
   contractAddr: string;
-  status: 'pending' | 'published' | 'rejected';
+  status: 'pending' | 'published' | 'rejected' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'REJECTED';
   createdAt: string;
   updatedAt: string;
   user: {
     id: string;
     email: string;
+  };
+}
+
+export interface AdminWallet {
+  id: string;
+  address?: string | null;
+  blockchain: string;
+  walletClient?: string | null;
+  isPrimary: boolean;
+  createdAt: string;
+  walletBalances: AdminWalletBalance[];
+  walletTransactions: AdminWalletTransaction[];
+}
+
+export interface AdminWalletBalance {
+  tokenAddress: string;
+  tokenSymbol: string;
+  tokenName?: string | null;
+  decimals: number;
+  balance: string;
+  balanceUsd?: number | null;
+  lastUpdated: string;
+}
+
+export interface AdminWalletTransaction {
+  txHash: string;
+  txType: string;
+  amount: string;
+  tokenSymbol: string;
+  fromAddress?: string | null;
+  toAddress?: string | null;
+  status: string;
+  createdAt: string;
+}
+
+export interface AdminUser {
+  id: number;
+  email: string;
+  name?: string | null;
+  role?: string;
+  privyDid?: string | null;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  wallets: AdminWallet[];
+  _count?: {
+    wallets: number;
+    userListings: number;
+    payments: number;
+    scanResults: number;
   };
 }
 
