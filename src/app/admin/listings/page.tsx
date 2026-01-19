@@ -28,7 +28,7 @@ export default function AdminListingsPage() {
   const approveMutation = useApproveListing();
   const rejectMutation = useRejectListing();
 
-  const adminUserId = session?.user?.email || session?.user?.id || '';
+  const adminUserId = session?.user?.email || '';
 
   const isLoading = pendingLoading || publishedLoading || rejectedLoading || status === 'loading';
 
