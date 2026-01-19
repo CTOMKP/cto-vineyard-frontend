@@ -80,7 +80,7 @@ export default function AdminUsersPage() {
                       <p className="text-xs text-white/40 mt-1">Privy: {user.privyDid}</p>
                     )}
                     <p className="text-xs text-white/40 mt-1">
-                      Joined {new Date(user.createdAt).toLocaleDateString()} · Last login{' '}
+                      Joined {new Date(user.createdAt).toLocaleDateString()} ? Last login{' '}
                       {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
