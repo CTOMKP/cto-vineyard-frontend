@@ -23,56 +23,61 @@ export const adminKeys = {
 /**
  * Hook to fetch admin dashboard stats
  */
-export function useAdminStats() {
+export function useAdminStats(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: adminKeys.stats,
     queryFn: () => api.getAdminStats(),
     staleTime: 30_000, // Fresh for 30 seconds
     retry: 2,
+    enabled: options?.enabled,
   });
 }
 
 /**
  * Hook to fetch pending listings
  */
-export function usePendingListings() {
+export function usePendingListings(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: adminKeys.listings,
     queryFn: () => api.getPendingListings(),
     staleTime: 30_000,
+    enabled: options?.enabled,
   });
 }
 
 /**
  * Hook to fetch published listings
  */
-export function usePublishedListings() {
+export function usePublishedListings(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: adminKeys.publishedListings,
     queryFn: () => api.getPublishedListings(),
     staleTime: 30_000,
+    enabled: options?.enabled,
   });
 }
 
 /**
  * Hook to fetch rejected listings
  */
-export function useRejectedListings() {
+export function useRejectedListings(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: adminKeys.rejectedListings,
     queryFn: () => api.getRejectedListings(),
     staleTime: 30_000,
+    enabled: options?.enabled,
   });
 }
 
 /**
  * Hook to fetch admin users
  */
-export function useAdminUsers(filters?: { search?: string; limit?: number; offset?: number }) {
+export function useAdminUsers(filters?: { search?: string; limit?: number; offset?: number }, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [...adminKeys.users, filters],
     queryFn: () => api.getUsers(filters),
     staleTime: 30_000,
+    enabled: options?.enabled,
   });
 }
 
@@ -120,22 +125,24 @@ export function useRejectListing() {
 /**
  * Hook to fetch payments
  */
-export function usePayments(filters?: { status?: string; limit?: number }) {
+export function usePayments(filters?: { status?: string; limit?: number }, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [...adminKeys.payments, filters],
     queryFn: () => api.getPayments(filters),
     staleTime: 30_000,
+    enabled: options?.enabled,
   });
 }
 
 /**
  * Hook to fetch active ad boosts
  */
-export function useActiveBoosts() {
+export function useActiveBoosts(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: adminKeys.boosts,
     queryFn: () => api.getActiveBoosts(),
     staleTime: 30_000,
+    enabled: options?.enabled,
   });
 }
 

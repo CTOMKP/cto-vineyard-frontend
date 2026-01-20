@@ -9,6 +9,7 @@ import { usePendingListings, usePublishedListings, useRejectedListings, useAppro
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { getCloudFrontUrl } from '@/lib/cloudfront';
 
 const tabs = [
   { id: 'pending', label: 'Pending', icon: Clock },
@@ -22,9 +23,10 @@ export default function AdminListingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>('pending');
-  const { data: pending, isLoading: pendingLoading, refetch: refetchPending } = usePendingListings();
-  const { data: published, isLoading: publishedLoading, refetch: refetchPublished } = usePublishedListings();
-  const { data: rejected, isLoading: rejectedLoading, refetch: refetchRejected } = useRejectedListings();
+  const isAuthed = status === 'authenticated';
+  const { data: pending, isLoading: pendingLoading, refetch: refetchPending } = usePendingListings({ enabled: isAuthed });
+  const { data: published, isLoading: publishedLoading, refetch: refetchPublished } = usePublishedListings({ enabled: isAuthed });
+  const { data: rejected, isLoading: rejectedLoading, refetch: refetchRejected } = useRejectedListings({ enabled: isAuthed });
   const approveMutation = useApproveListing();
   const rejectMutation = useRejectListing();
 
@@ -128,7 +130,7 @@ export default function AdminListingsPage() {
                   <div className="grid gap-2 text-sm text-white/60">
                     <div>
                       <span className="font-medium text-white/70">Contract:</span>{' '}
-                      <code className="bg-[#262626] px-2 py-1 rounded text-xs">
+                      <code className="bg-[#262626] px-2 py-1 rounded text-xs break-all">
                         {listing.contractAddr}
                       </code>
                     </div>
@@ -146,7 +148,7 @@ export default function AdminListingsPage() {
                         <div className="rounded-xl border border-white/10 bg-[#0B0B0B] p-3">
                           <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Logo</p>
                           <img
-                            src={listing.logoUrl}
+                            src={getCloudFrontUrl(listing.logoUrl)}
                             alt={`${listing.title} logo`}
                             className="h-24 w-24 rounded-lg object-cover"
                             loading="lazy"
@@ -157,7 +159,7 @@ export default function AdminListingsPage() {
                         <div className="rounded-xl border border-white/10 bg-[#0B0B0B] p-3">
                           <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Banner</p>
                           <img
-                            src={listing.bannerUrl}
+                            src={getCloudFrontUrl(listing.bannerUrl)}
                             alt={`${listing.title} banner`}
                             className="h-24 w-full rounded-lg object-cover"
                             loading="lazy"
@@ -176,7 +178,7 @@ export default function AdminListingsPage() {
                             href={url}
                             target="_blank"
                             rel="noreferrer"
-                            className="hover:text-white"
+                            className="hover:text-white break-all"
                           >
                             {label}: {url}
                           </a>

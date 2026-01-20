@@ -13,7 +13,11 @@ export default function AdminUsersPage() {
   const { status } = useSession();
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const { data: users, isLoading } = useAdminUsers({ search: query || undefined, limit: 50 });
+  const isAuthed = status === 'authenticated';
+  const { data: users, isLoading } = useAdminUsers(
+    { search: query || undefined, limit: 50 },
+    { enabled: isAuthed }
+  );
   const visibleUsers = users || [];
 
   if (status === 'unauthenticated') {
@@ -68,12 +72,14 @@ export default function AdminUsersPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {visibleUsers.map((user) => (
+          {visibleUsers.map((user) => {
+            const displayName = user.name || (user.email ? user.email.split('@')[0] : 'Unnamed user');
+            return (
             <Card key={user.id} className="p-6">
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <p className="text-lg font-semibold text-white">{user.name || 'Unnamed user'}</p>
+                    <p className="text-lg font-semibold text-white">{displayName}</p>
                     <p className="text-sm text-white/60">{user.email}</p>
                     {user.privyDid && (
                       <p className="text-xs text-white/40 mt-1">Privy: {user.privyDid}</p>
@@ -152,7 +158,7 @@ export default function AdminUsersPage() {
                 </div>
               </div>
             </Card>
-          ))}
+          )})}
         </div>
       )}
     </div>

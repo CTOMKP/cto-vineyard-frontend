@@ -12,7 +12,8 @@ import { Spinner } from '@/components/ui/Spinner';
 export default function AdminPage() {
   const { status } = useSession();
   const router = useRouter();
-  const { data: stats, isLoading, refetch } = useAdminStats();
+  const isAuthed = status === 'authenticated';
+  const { data: stats, isLoading, refetch } = useAdminStats({ enabled: isAuthed });
 
   if (status === 'unauthenticated') {
     router.push('/signin');

@@ -14,7 +14,11 @@ export default function AdminPaymentsPage() {
   const { status } = useSession();
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const { data: payments, isLoading, refetch } = usePayments({ status: statusFilter || undefined });
+  const isAuthed = status === 'authenticated';
+  const { data: payments, isLoading, refetch } = usePayments(
+    { status: statusFilter || undefined },
+    { enabled: isAuthed }
+  );
 
   if (status === 'unauthenticated') {
     router.push('/signin');

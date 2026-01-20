@@ -12,7 +12,8 @@ import { Spinner } from '@/components/ui/Spinner';
 export default function AdminBoostsPage() {
   const { status } = useSession();
   const router = useRouter();
-  const { data: boosts, isLoading, refetch } = useActiveBoosts();
+  const isAuthed = status === 'authenticated';
+  const { data: boosts, isLoading, refetch } = useActiveBoosts({ enabled: isAuthed });
 
   if (status === 'unauthenticated') {
     router.push('/signin');
@@ -93,7 +94,7 @@ export default function AdminBoostsPage() {
                   <div className="space-y-2 text-sm text-white/70">
                     <p>
                       <span className="text-white/50">Contract:</span>{' '}
-                      <code className="bg-[#262626] px-2 py-1 rounded text-xs">
+                      <code className="bg-[#262626] px-2 py-1 rounded text-xs break-all">
                         {boost.listing?.contractAddr || 'N/A'}
                       </code>
                     </p>
