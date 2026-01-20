@@ -23,9 +23,12 @@ export function getCloudFrontUrl(url: string | null | undefined): string {
     // Extract path from full URL
     try {
       const urlObj = new URL(url);
-      imagePath = urlObj.pathname.startsWith('/') 
-        ? urlObj.pathname.substring(1) 
+      const rawPath = urlObj.pathname.startsWith('/')
+        ? urlObj.pathname.substring(1)
         : urlObj.pathname;
+      imagePath = rawPath
+        .replace(/^api\/v1\/images\/view\//, '')
+        .replace(/^images\/view\//, '');
     } catch {
       // Try to extract path manually
       const match = url.match(/\/(memes|user-uploads)\/.+/);
