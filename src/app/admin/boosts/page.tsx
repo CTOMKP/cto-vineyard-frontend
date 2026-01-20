@@ -8,11 +8,13 @@ import { useActiveBoosts } from '@/hooks/useAdmin';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import type { ExtendedSession } from '@/lib/auth';
 
 export default function AdminBoostsPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const accessToken = (session as ExtendedSession | null)?.accessToken;
   const router = useRouter();
-  const isAuthed = status === 'authenticated';
+  const isAuthed = status === 'authenticated' && Boolean(accessToken);
   const { data: boosts, isLoading, refetch } = useActiveBoosts({ enabled: isAuthed });
 
   if (status === 'unauthenticated') {
@@ -77,7 +79,7 @@ export default function AdminBoostsPage() {
           {boosts.map((boost) => (
             <Card key={boost.id} className="p-6 hover:border-orange-500/50 transition-colors">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-3 mb-3">
                     <h3 className="text-xl font-bold text-white">
                       {boost.listing?.title || 'Unknown Listing'}

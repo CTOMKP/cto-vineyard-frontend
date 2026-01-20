@@ -9,12 +9,14 @@ import { usePayments } from '@/hooks/useAdmin';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import type { ExtendedSession } from '@/lib/auth';
 
 export default function AdminPaymentsPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const accessToken = (session as ExtendedSession | null)?.accessToken;
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const isAuthed = status === 'authenticated';
+  const isAuthed = status === 'authenticated' && Boolean(accessToken);
   const { data: payments, isLoading, refetch } = usePayments(
     { status: statusFilter || undefined },
     { enabled: isAuthed }

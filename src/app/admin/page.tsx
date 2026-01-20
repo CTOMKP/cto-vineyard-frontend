@@ -8,11 +8,13 @@ import { useAdminStats } from '@/hooks/useAdmin';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import type { ExtendedSession } from '@/lib/auth';
 
 export default function AdminPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const accessToken = (session as ExtendedSession | null)?.accessToken;
   const router = useRouter();
-  const isAuthed = status === 'authenticated';
+  const isAuthed = status === 'authenticated' && Boolean(accessToken);
   const { data: stats, isLoading, refetch } = useAdminStats({ enabled: isAuthed });
 
   if (status === 'unauthenticated') {

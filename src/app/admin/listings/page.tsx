@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { getCloudFrontUrl } from '@/lib/cloudfront';
+import type { ExtendedSession } from '@/lib/auth';
 
 const tabs = [
   { id: 'pending', label: 'Pending', icon: Clock },
@@ -21,9 +22,10 @@ type TabId = (typeof tabs)[number]['id'];
 
 export default function AdminListingsPage() {
   const { data: session, status } = useSession();
+  const accessToken = (session as ExtendedSession | null)?.accessToken;
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>('pending');
-  const isAuthed = status === 'authenticated';
+  const isAuthed = status === 'authenticated' && Boolean(accessToken);
   const { data: pending, isLoading: pendingLoading, refetch: refetchPending } = usePendingListings({ enabled: isAuthed });
   const { data: published, isLoading: publishedLoading, refetch: refetchPublished } = usePublishedListings({ enabled: isAuthed });
   const { data: rejected, isLoading: rejectedLoading, refetch: refetchRejected } = useRejectedListings({ enabled: isAuthed });
@@ -114,7 +116,7 @@ export default function AdminListingsPage() {
           {visibleListings.map((listing) => (
             <Card key={listing.id} className="p-6">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex-1 space-y-3">
+                <div className="flex-1 min-w-0 space-y-3">
                   <div className="flex items-center gap-3">
                     <h3 className="text-xl font-bold text-white">{listing.title}</h3>
                     <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">

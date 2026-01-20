@@ -8,12 +8,14 @@ import { ChevronLeft, Users, Wallet, Activity } from 'lucide-react';
 import { useAdminUsers } from '@/hooks/useAdmin';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
+import type { ExtendedSession } from '@/lib/auth';
 
 export default function AdminUsersPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
+  const accessToken = (session as ExtendedSession | null)?.accessToken;
   const router = useRouter();
   const [query, setQuery] = useState('');
-  const isAuthed = status === 'authenticated';
+  const isAuthed = status === 'authenticated' && Boolean(accessToken);
   const { data: users, isLoading } = useAdminUsers(
     { search: query || undefined, limit: 50 },
     { enabled: isAuthed }
