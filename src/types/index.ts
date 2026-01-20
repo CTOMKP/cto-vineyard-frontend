@@ -69,10 +69,14 @@ export interface Listing {
   id: string;
   title: string;
   description?: string;
+  bio?: string | null;
   contractAddr: string;
   status: 'pending' | 'published' | 'rejected' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'REJECTED';
   createdAt: string;
   updatedAt: string;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
+  links?: Record<string, string> | null;
   user: {
     id: string;
     email: string;

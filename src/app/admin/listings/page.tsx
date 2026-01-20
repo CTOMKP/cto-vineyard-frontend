@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -29,6 +29,9 @@ export default function AdminListingsPage() {
   const rejectMutation = useRejectListing();
 
   const adminUserId = session?.user?.email || '';
+  const visibleListings = activeTab === 'published' ? (published || [])
+    : activeTab === 'rejected' ? (rejected || [])
+    : (pending || []);
 
   const isLoading = pendingLoading || publishedLoading || rejectedLoading || status === 'loading';
 
@@ -44,12 +47,6 @@ export default function AdminListingsPage() {
       </div>
     );
   }
-
-  const visibleListings = useMemo(() => {
-    if (activeTab === 'published') return published || [];
-    if (activeTab === 'rejected') return rejected || [];
-    return pending || [];
-  }, [activeTab, pending, published, rejected]);
 
   const handleApprove = async (id: string) => {
     await approveMutation.mutateAsync({ listingId: id, adminUserId });
@@ -125,6 +122,9 @@ export default function AdminListingsPage() {
                   {listing.description && (
                     <p className="text-white/80">{listing.description}</p>
                   )}
+                  {listing.bio && (
+                    <p className="text-white/60 text-sm">{listing.bio}</p>
+                  )}
                   <div className="grid gap-2 text-sm text-white/60">
                     <div>
                       <span className="font-medium text-white/70">Contract:</span>{' '}
@@ -140,6 +140,50 @@ export default function AdminListingsPage() {
                       {new Date(listing.createdAt).toLocaleString()}
                     </div>
                   </div>
+                  {(listing.logoUrl || listing.bannerUrl) && (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {listing.logoUrl && (
+                        <div className="rounded-xl border border-white/10 bg-[#0B0B0B] p-3">
+                          <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Logo</p>
+                          <img
+                            src={listing.logoUrl}
+                            alt={`${listing.title} logo`}
+                            className="h-24 w-24 rounded-lg object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                      {listing.bannerUrl && (
+                        <div className="rounded-xl border border-white/10 bg-[#0B0B0B] p-3">
+                          <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Banner</p>
+                          <img
+                            src={listing.bannerUrl}
+                            alt={`${listing.title} banner`}
+                            className="h-24 w-full rounded-lg object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {listing.links && Object.keys(listing.links).length > 0 && (
+                    <div className="rounded-xl border border-white/10 bg-[#0B0B0B] p-3">
+                      <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Links</p>
+                      <div className="grid gap-2 text-sm text-white/70">
+                        {Object.entries(listing.links).map(([label, url]) => (
+                          <a
+                            key={label}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="hover:text-white"
+                          >
+                            {label}: {url}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {activeTab === 'pending' && (

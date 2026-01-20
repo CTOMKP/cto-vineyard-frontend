@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -14,6 +14,7 @@ export default function AdminUsersPage() {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const { data: users, isLoading } = useAdminUsers({ search: query || undefined, limit: 50 });
+  const visibleUsers = users || [];
 
   if (status === 'unauthenticated') {
     router.push('/signin');
@@ -27,8 +28,6 @@ export default function AdminUsersPage() {
       </div>
     );
   }
-
-  const visibleUsers = useMemo(() => users || [], [users]);
 
   return (
     <div className="space-y-6">
