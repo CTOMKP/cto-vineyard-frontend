@@ -13,7 +13,8 @@ import type {
   Listing, 
   Payment, 
   AdBoost,
-  AdminUser
+  AdminUser,
+  MarketplaceAd
 } from '@/types';
 
 class ApiClient {
@@ -270,6 +271,50 @@ class ApiClient {
   async getActiveBoosts(): Promise<AdBoost[]> {
     const data = await this.request<{ boosts: AdBoost[] }>('/api/v1/admin/ad-boosts/active');
     return data.boosts || [];
+  }
+
+  /**
+   * Get pending marketplace ads
+   */
+  async getPendingMarketplaceAds(): Promise<MarketplaceAd[]> {
+    const data = await this.request<{ ads: MarketplaceAd[] }>('/api/v1/admin/marketplace-ads/pending');
+    return data.ads || [];
+  }
+
+  /**
+   * Get published marketplace ads
+   */
+  async getPublishedMarketplaceAds(): Promise<MarketplaceAd[]> {
+    const data = await this.request<{ ads: MarketplaceAd[] }>('/api/v1/admin/marketplace-ads/published');
+    return data.ads || [];
+  }
+
+  /**
+   * Get rejected marketplace ads
+   */
+  async getRejectedMarketplaceAds(): Promise<MarketplaceAd[]> {
+    const data = await this.request<{ ads: MarketplaceAd[] }>('/api/v1/admin/marketplace-ads/rejected');
+    return data.ads || [];
+  }
+
+  /**
+   * Approve a marketplace ad
+   */
+  async approveMarketplaceAd(adId: string, adminUserId: string): Promise<void> {
+    await this.request('/api/v1/admin/marketplace-ads/approve', {
+      method: 'POST',
+      body: JSON.stringify({ adId, adminUserId }),
+    });
+  }
+
+  /**
+   * Reject a marketplace ad
+   */
+  async rejectMarketplaceAd(adId: string, adminUserId: string, reason: string, notes?: string): Promise<void> {
+    await this.request('/api/v1/admin/marketplace-ads/reject', {
+      method: 'POST',
+      body: JSON.stringify({ adId, adminUserId, reason, notes }),
+    });
   }
 }
 

@@ -15,6 +15,9 @@ export const adminKeys = {
   listings: ['admin', 'listings'] as const,
   publishedListings: ['admin', 'listings', 'published'] as const,
   rejectedListings: ['admin', 'listings', 'rejected'] as const,
+  marketplaceAds: ['admin', 'marketplace-ads'] as const,
+  publishedMarketplaceAds: ['admin', 'marketplace-ads', 'published'] as const,
+  rejectedMarketplaceAds: ['admin', 'marketplace-ads', 'rejected'] as const,
   users: ['admin', 'users'] as const,
   payments: ['admin', 'payments'] as const,
   boosts: ['admin', 'boosts'] as const,
@@ -64,6 +67,42 @@ export function useRejectedListings(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: adminKeys.rejectedListings,
     queryFn: () => api.getRejectedListings(),
+    staleTime: 30_000,
+    enabled: options?.enabled,
+  });
+}
+
+/**
+ * Hook to fetch pending marketplace ads
+ */
+export function usePendingMarketplaceAds(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: adminKeys.marketplaceAds,
+    queryFn: () => api.getPendingMarketplaceAds(),
+    staleTime: 30_000,
+    enabled: options?.enabled,
+  });
+}
+
+/**
+ * Hook to fetch published marketplace ads
+ */
+export function usePublishedMarketplaceAds(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: adminKeys.publishedMarketplaceAds,
+    queryFn: () => api.getPublishedMarketplaceAds(),
+    staleTime: 30_000,
+    enabled: options?.enabled,
+  });
+}
+
+/**
+ * Hook to fetch rejected marketplace ads
+ */
+export function useRejectedMarketplaceAds(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: adminKeys.rejectedMarketplaceAds,
+    queryFn: () => api.getRejectedMarketplaceAds(),
     staleTime: 30_000,
     enabled: options?.enabled,
   });
@@ -131,6 +170,48 @@ export function usePayments(filters?: { status?: string; limit?: number }, optio
     queryFn: () => api.getPayments(filters),
     staleTime: 30_000,
     enabled: options?.enabled,
+  });
+}
+
+/**
+ * Hook to approve a marketplace ad
+ */
+export function useApproveMarketplaceAd() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { adId: string; adminUserId: string }) =>
+      api.approveMarketplaceAd(payload.adId, payload.adminUserId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.marketplaceAds });
+      queryClient.invalidateQueries({ queryKey: adminKeys.publishedMarketplaceAds });
+      queryClient.invalidateQueries({ queryKey: adminKeys.stats });
+      toast.success('Marketplace ad approved');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to approve marketplace ad');
+    },
+  });
+}
+
+/**
+ * Hook to reject a marketplace ad
+ */
+export function useRejectMarketplaceAd() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ adId, reason, notes, adminUserId }: { adId: string; reason: string; notes?: string; adminUserId: string }) =>
+      api.rejectMarketplaceAd(adId, adminUserId, reason, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.marketplaceAds });
+      queryClient.invalidateQueries({ queryKey: adminKeys.rejectedMarketplaceAds });
+      queryClient.invalidateQueries({ queryKey: adminKeys.stats });
+      toast.success('Marketplace ad rejected');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to reject marketplace ad');
+    },
   });
 }
 

@@ -165,6 +165,40 @@ export interface AdBoost {
   };
 }
 
+export interface MarketplaceAd {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  subCategory?: string | null;
+  postType?: 'LOOKING_FOR' | 'OFFERING';
+  chain?: string | null;
+  offerType?: string | null;
+  priceAmount?: number | null;
+  priceCurrency?: string | null;
+  images?: string[] | null;
+  imageCount?: number;
+  tier: 'FREE' | 'PLUS' | 'PREMIUM';
+  featuredPlacement?: boolean;
+  homepageSpotlight?: boolean;
+  topOfDayDays?: number | null;
+  autoBumpDays?: number | null;
+  urgentTag?: boolean;
+  multiChainTag?: boolean;
+  totalPrice?: number | null;
+  status: 'DRAFT' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'REJECTED' | 'EXPIRED' | 'SOLD';
+  rejectionReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string | null;
+  expiresAt?: string | null;
+  user?: {
+    id: string | number;
+    email?: string | null;
+    name?: string | null;
+  };
+}
+
 // API Response types
 export interface ApiResponse<T = unknown> {
   success?: boolean;

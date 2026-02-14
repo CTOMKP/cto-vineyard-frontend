@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, ClipboardList, Users, CreditCard, Rocket, Shield } from 'lucide-react';
+import { BarChart3, ClipboardList, Users, CreditCard, Rocket, Shield, Megaphone } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 const navItems = [
   { href: '/admin', label: 'Metrics', icon: BarChart3 },
   { href: '/admin/listings', label: 'User Listings', icon: ClipboardList },
+  { href: '/admin/marketplace-ads', label: 'Marketplace Ads', icon: Megaphone },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/payments', label: 'Payments', icon: CreditCard },
   { href: '/admin/boosts', label: 'Boosts', icon: Rocket },
