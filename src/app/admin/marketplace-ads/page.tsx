@@ -27,6 +27,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import type { ExtendedSession } from '@/lib/auth';
+import { getCloudFrontUrl } from '@/lib/cloudfront';
 
 const tabs = [
   { id: 'pending', label: 'Pending', icon: Clock },
@@ -210,7 +211,7 @@ export default function AdminMarketplaceAdsPage() {
                               {ad.images.map((img, idx) => (
                                 <div key={idx} className="rounded-lg border border-white/10 bg-black/40 p-2">
                                   <img
-                                    src={img}
+                                    src={getCloudFrontUrl(img)}
                                     alt={`${ad.title} ${idx + 1}`}
                                     className="h-28 w-full rounded-md object-cover"
                                     loading="lazy"
