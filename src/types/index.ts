@@ -199,6 +199,40 @@ export interface MarketplaceAd {
   };
 }
 
+export interface EscrowMilestone {
+  id: string;
+  title: string;
+  amount: number;
+  dueDate?: string | null;
+}
+
+export interface Escrow {
+  id: string;
+  title: string;
+  totalAmount: number;
+  currency: string;
+  status:
+    | 'PROPOSED'
+    | 'AWAITING_PAYMENT'
+    | 'FUNDED_ACTIVE'
+    | 'UNDER_REVIEW'
+    | 'COMPLETED'
+    | 'DECLINED'
+    | 'CANCELLED'
+    | 'REFUNDED'
+    | 'DISPUTED';
+  deadline?: string | null;
+  noDeadline?: boolean;
+  isFrozen?: boolean;
+  flaggedReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  ad?: MarketplaceAd;
+  milestones?: EscrowMilestone[];
+  posterId?: number;
+  applicantId?: number;
+}
+
 // API Response types
 export interface ApiResponse<T = unknown> {
   success?: boolean;

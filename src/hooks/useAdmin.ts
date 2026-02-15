@@ -21,6 +21,7 @@ export const adminKeys = {
   users: ['admin', 'users'] as const,
   payments: ['admin', 'payments'] as const,
   boosts: ['admin', 'boosts'] as const,
+  escrows: ['admin', 'escrows'] as const,
 };
 
 /**
@@ -224,6 +225,105 @@ export function useActiveBoosts(options?: { enabled?: boolean }) {
     queryFn: () => api.getActiveBoosts(),
     staleTime: 30_000,
     enabled: options?.enabled,
+  });
+}
+
+export function useEscrows(status?: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: [...adminKeys.escrows, status],
+    queryFn: () => api.getEscrows(status),
+    staleTime: 30_000,
+    enabled: options?.enabled,
+  });
+}
+
+export function useForceReleaseEscrow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { escrowId: string; adminUserId: string }) =>
+      api.forceReleaseEscrow(payload.escrowId, payload.adminUserId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.escrows });
+      toast.success('Escrow released');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to release escrow');
+    },
+  });
+}
+
+export function useForceRefundEscrow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { escrowId: string; adminUserId: string }) =>
+      api.forceRefundEscrow(payload.escrowId, payload.adminUserId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.escrows });
+      toast.success('Escrow refunded');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to refund escrow');
+    },
+  });
+}
+
+export function useExtendEscrow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { escrowId: string; adminUserId: string; newDeadline: string }) =>
+      api.extendEscrow(payload.escrowId, payload.adminUserId, payload.newDeadline),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.escrows });
+      toast.success('Escrow deadline extended');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to extend escrow');
+    },
+  });
+}
+
+export function useFreezeEscrow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { escrowId: string; adminUserId: string }) =>
+      api.freezeEscrow(payload.escrowId, payload.adminUserId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.escrows });
+      toast.success('Escrow frozen');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to freeze escrow');
+    },
+  });
+}
+
+export function useFlagEscrow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { escrowId: string; adminUserId: string; reason?: string }) =>
+      api.flagEscrow(payload.escrowId, payload.adminUserId, payload.reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.escrows });
+      toast.success('Escrow flagged');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to flag escrow');
+    },
+  });
+}
+
+export function useResolveEscrowDispute() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { escrowId: string; adminUserId: string }) =>
+      api.resolveEscrowDispute(payload.escrowId, payload.adminUserId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.escrows });
+      toast.success('Dispute resolved');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to resolve dispute');
+    },
   });
 }
 

@@ -14,7 +14,8 @@ import type {
   Payment, 
   AdBoost,
   AdminUser,
-  MarketplaceAd
+  MarketplaceAd,
+  Escrow
 } from '@/types';
 
 class ApiClient {
@@ -314,6 +315,57 @@ class ApiClient {
     await this.request('/api/v1/admin/marketplace-ads/reject', {
       method: 'POST',
       body: JSON.stringify({ adId, adminUserId, reason, notes }),
+    });
+  }
+
+  /**
+   * Get escrows (admin)
+   */
+  async getEscrows(status?: string): Promise<Escrow[]> {
+    const query = status ? `?status=${encodeURIComponent(status)}` : '';
+    const data = await this.request<{ escrows: Escrow[] }>(`/api/v1/admin/escrows${query}`);
+    return data.escrows || [];
+  }
+
+  async forceReleaseEscrow(escrowId: string, adminUserId: string) {
+    await this.request('/api/v1/admin/escrows/release', {
+      method: 'POST',
+      body: JSON.stringify({ escrowId, adminUserId }),
+    });
+  }
+
+  async forceRefundEscrow(escrowId: string, adminUserId: string) {
+    await this.request('/api/v1/admin/escrows/refund', {
+      method: 'POST',
+      body: JSON.stringify({ escrowId, adminUserId }),
+    });
+  }
+
+  async extendEscrow(escrowId: string, adminUserId: string, newDeadline: string) {
+    await this.request('/api/v1/admin/escrows/extend', {
+      method: 'POST',
+      body: JSON.stringify({ escrowId, adminUserId, newDeadline }),
+    });
+  }
+
+  async freezeEscrow(escrowId: string, adminUserId: string) {
+    await this.request('/api/v1/admin/escrows/freeze', {
+      method: 'POST',
+      body: JSON.stringify({ escrowId, adminUserId }),
+    });
+  }
+
+  async flagEscrow(escrowId: string, adminUserId: string, reason?: string) {
+    await this.request('/api/v1/admin/escrows/flag', {
+      method: 'POST',
+      body: JSON.stringify({ escrowId, adminUserId, reason }),
+    });
+  }
+
+  async resolveEscrowDispute(escrowId: string, adminUserId: string) {
+    await this.request('/api/v1/admin/escrows/resolve-dispute', {
+      method: 'POST',
+      body: JSON.stringify({ escrowId, adminUserId }),
     });
   }
 }
