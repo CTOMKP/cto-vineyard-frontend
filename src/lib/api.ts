@@ -109,8 +109,11 @@ class ApiClient {
    * Get all memes (public)
    */
   async getMemes(): Promise<Meme[]> {
-    const data = await this.request<Meme[] | { data: Meme[] }>('/api/v1/memes');
-    return Array.isArray(data) ? data : (data.data || []);
+    const data = await this.request<Meme[] | { data?: Meme[]; items?: Meme[] }>('/api/v1/memes');
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.data)) return data.data;
+    if (Array.isArray(data?.items)) return data.items;
+    return [];
   }
 
   /**
