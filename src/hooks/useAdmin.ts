@@ -298,6 +298,21 @@ export function useFreezeEscrow() {
   });
 }
 
+export function useUnfreezeEscrow() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { escrowId: string; adminUserId: string }) =>
+      api.unfreezeEscrow(payload.escrowId, payload.adminUserId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.escrows });
+      toast.success('Escrow unfrozen');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to unfreeze escrow');
+    },
+  });
+}
+
 export function useFlagEscrow() {
   const queryClient = useQueryClient();
   return useMutation({

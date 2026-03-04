@@ -11,6 +11,7 @@ import {
   useForceRefundEscrow,
   useExtendEscrow,
   useFreezeEscrow,
+  useUnfreezeEscrow,
   useFlagEscrow,
   useResolveEscrowDispute,
 } from '@/hooks/useAdmin';
@@ -24,6 +25,7 @@ const tabs = [
   { id: 'AWAITING_PAYMENT', label: 'Awaiting Payment', icon: Clock },
   { id: 'FUNDED_ACTIVE', label: 'Active', icon: BadgeCheck },
   { id: 'UNDER_REVIEW', label: 'Under Review', icon: AlertTriangle },
+  { id: 'DISPUTED', label: 'Disputed', icon: AlertTriangle },
   { id: 'COMPLETED', label: 'Completed', icon: BadgeCheck },
   { id: 'REFUNDED', label: 'Refunded', icon: Ban },
 ] as const;
@@ -44,6 +46,7 @@ export default function AdminEscrowsPage() {
   const refundMutation = useForceRefundEscrow();
   const extendMutation = useExtendEscrow();
   const freezeMutation = useFreezeEscrow();
+  const unfreezeMutation = useUnfreezeEscrow();
   const flagMutation = useFlagEscrow();
   const resolveMutation = useResolveEscrowDispute();
 
@@ -79,6 +82,11 @@ export default function AdminEscrowsPage() {
 
   const handleFreeze = async (id: string) => {
     await freezeMutation.mutateAsync({ escrowId: id, adminUserId });
+    refetch();
+  };
+
+  const handleUnfreeze = async (id: string) => {
+    await unfreezeMutation.mutateAsync({ escrowId: id, adminUserId });
     refetch();
   };
 
@@ -169,23 +177,35 @@ export default function AdminEscrowsPage() {
                   <Button size="sm" variant="secondary" onClick={() => handleExtend(escrow.id)}>
                     Extend
                   </Button>
-                  <Button size="sm" variant="secondary" onClick={() => handleFreeze(escrow.id)}>
-                    Freeze
-                  </Button>
+                  {escrow.isFrozen ? (
+                    <Button size="sm" variant="secondary" onClick={() => handleUnfreeze(escrow.id)}>
+                      Unfreeze
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="secondary" onClick={() => handleFreeze(escrow.id)}>
+                      Freeze
+                    </Button>
+                  )}
                   <Button size="sm" variant="secondary" onClick={() => handleFlag(escrow.id)}>
                     Flag
                   </Button>
-                  <Button size="sm" variant="secondary" onClick={() => handleResolve(escrow.id)}>
-                    Resolve
-                  </Button>
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleRelease(escrow.id)}>
-                    <CheckCircle className="w-4 h-4 mr-1" />
-                    Release
-                  </Button>
-                  <Button size="sm" variant="danger" onClick={() => handleRefund(escrow.id)}>
-                    <XCircle className="w-4 h-4 mr-1" />
-                    Refund
-                  </Button>
+                  {escrow.status === 'DISPUTED' && (
+                    <Button size="sm" variant="secondary" onClick={() => handleResolve(escrow.id)}>
+                      Resolve
+                    </Button>
+                  )}
+                  {['UNDER_REVIEW', 'FUNDED_ACTIVE'].includes(escrow.status) && (
+                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleRelease(escrow.id)}>
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      Release
+                    </Button>
+                  )}
+                  {['AWAITING_PAYMENT', 'FUNDED_ACTIVE', 'UNDER_REVIEW'].includes(escrow.status) && (
+                    <Button size="sm" variant="danger" onClick={() => handleRefund(escrow.id)}>
+                      <XCircle className="w-4 h-4 mr-1" />
+                      Refund
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>

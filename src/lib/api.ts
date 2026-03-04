@@ -359,6 +359,13 @@ class ApiClient {
     });
   }
 
+  async unfreezeEscrow(escrowId: string, adminUserId: string) {
+    await this.request('/api/v1/admin/escrows/unfreeze', {
+      method: 'POST',
+      body: JSON.stringify({ escrowId, adminUserId }),
+    });
+  }
+
   async flagEscrow(escrowId: string, adminUserId: string, reason?: string) {
     await this.request('/api/v1/admin/escrows/flag', {
       method: 'POST',
