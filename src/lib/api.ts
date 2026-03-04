@@ -15,7 +15,8 @@ import type {
   AdBoost,
   AdminUser,
   MarketplaceAd,
-  Escrow
+  Escrow,
+  NotificationItem,
 } from '@/types';
 
 class ApiClient {
@@ -370,6 +371,19 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify({ escrowId, adminUserId }),
     });
+  }
+
+  async getNotifications(unreadOnly = false): Promise<NotificationItem[]> {
+    const query = unreadOnly ? '?unread=1' : '';
+    const data = await this.request<{ success?: boolean; items?: NotificationItem[] }>(`/api/v1/notifications${query}`);
+    return data.items || [];
+  }
+
+  async markNotificationRead(notificationId: string): Promise<NotificationItem | null> {
+    const data = await this.request<NotificationItem | null>(`/api/v1/notifications/${notificationId}/read`, {
+      method: 'POST',
+    });
+    return data;
   }
 }
 

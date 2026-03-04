@@ -233,6 +233,26 @@ export interface Escrow {
   applicantId?: number;
 }
 
+export type NotificationType =
+  | 'MESSAGE'
+  | 'ESCROW'
+  | 'XP'
+  | 'PAYMENT'
+  | 'LISTING_APPROVAL'
+  | 'AD_APPROVAL'
+  | 'SYSTEM';
+
+export interface NotificationItem {
+  id: string;
+  userId: number;
+  type: NotificationType;
+  title: string;
+  body?: string | null;
+  data?: Record<string, unknown> | null;
+  createdAt: string;
+  readAt?: string | null;
+}
+
 // API Response types
 export interface ApiResponse<T = unknown> {
   success?: boolean;

@@ -22,6 +22,7 @@ export const adminKeys = {
   payments: ['admin', 'payments'] as const,
   boosts: ['admin', 'boosts'] as const,
   escrows: ['admin', 'escrows'] as const,
+  notifications: ['admin', 'notifications'] as const,
 };
 
 /**
@@ -323,6 +324,31 @@ export function useResolveEscrowDispute() {
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : 'Failed to resolve dispute');
+    },
+  });
+}
+
+export function useAdminNotifications(
+  options?: { enabled?: boolean; unreadOnly?: boolean; refetchInterval?: number }
+) {
+  return useQuery({
+    queryKey: [...adminKeys.notifications, options?.unreadOnly ? 'unread' : 'all'],
+    queryFn: () => api.getNotifications(Boolean(options?.unreadOnly)),
+    staleTime: 10_000,
+    enabled: options?.enabled,
+    refetchInterval: options?.enabled ? (options?.refetchInterval ?? 15_000) : false,
+  });
+}
+
+export function useMarkAdminNotificationRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (notificationId: string) => api.markNotificationRead(notificationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.notifications });
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to mark notification as read');
     },
   });
 }
