@@ -31,6 +31,14 @@ const navItems = [
   { href: '/admin/boosts', label: 'Boosts', icon: Rocket },
 ];
 
+const ADMIN_NOTIFICATION_TYPES = new Set([
+  'ESCROW',
+  'PAYMENT',
+  'LISTING_APPROVAL',
+  'AD_APPROVAL',
+  'SYSTEM',
+]);
+
 function formatTimeAgo(dateIso: string) {
   const timestamp = new Date(dateIso).getTime();
   const diffMs = Date.now() - timestamp;
@@ -74,9 +82,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   });
   const markReadMutation = useMarkAdminNotificationRead();
 
-  const unreadNotifications = useMemo(
-    () => notifications.filter((item) => !item.readAt),
+  const adminNotifications = useMemo(
+    () => notifications.filter((item) => ADMIN_NOTIFICATION_TYPES.has(item.type)),
     [notifications],
+  );
+  const unreadNotifications = useMemo(
+    () => adminNotifications.filter((item) => !item.readAt),
+    [adminNotifications],
   );
   const unreadCount = unreadNotifications.length;
 
@@ -195,10 +207,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   <div className="max-h-[420px] overflow-y-auto">
                     {isLoadingNotifications ? (
                       <div className="px-4 py-8 text-center text-sm text-white/60">Loading notifications...</div>
-                    ) : notifications.length === 0 ? (
+                    ) : adminNotifications.length === 0 ? (
                       <div className="px-4 py-8 text-center text-sm text-white/60">No notifications yet</div>
                     ) : (
-                      notifications.map((notification) => (
+                      adminNotifications.map((notification) => (
                         <button
                           key={notification.id}
                           type="button"
