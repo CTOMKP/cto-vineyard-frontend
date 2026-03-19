@@ -25,6 +25,8 @@ export default function AdminListingsPage() {
   const accessToken = (session as ExtendedSession | null)?.accessToken;
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>('pending');
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
   const isAuthed = status === 'authenticated' && Boolean(accessToken);
   const { data: pending, isLoading: pendingLoading, refetch: refetchPending } = usePendingListings({ enabled: isAuthed });
   const { data: published, isLoading: publishedLoading, refetch: refetchPublished } = usePublishedListings({ enabled: isAuthed });
@@ -53,17 +55,27 @@ export default function AdminListingsPage() {
   }
 
   const handleApprove = async (id: string) => {
-    await approveMutation.mutateAsync({ listingId: id, adminUserId });
-    await refetchPending();
-    await refetchPublished();
+    try {
+      setApprovingId(id);
+      await approveMutation.mutateAsync({ listingId: id, adminUserId });
+      await refetchPending();
+      await refetchPublished();
+    } finally {
+      setApprovingId(null);
+    }
   };
 
   const handleReject = async (id: string) => {
     const reason = prompt('Rejection reason (required):') || '';
     if (!reason.trim()) return;
-    await rejectMutation.mutateAsync({ listingId: id, reason, adminUserId });
-    await refetchPending();
-    await refetchRejected();
+    try {
+      setRejectingId(id);
+      await rejectMutation.mutateAsync({ listingId: id, reason, adminUserId });
+      await refetchPending();
+      await refetchRejected();
+    } finally {
+      setRejectingId(null);
+    }
   };
 
   return (
@@ -194,7 +206,7 @@ export default function AdminListingsPage() {
                   <div className="flex flex-row gap-2">
                     <Button
                       onClick={() => handleApprove(listing.id)}
-                      loading={approveMutation.isPending}
+                      loading={approvingId === listing.id}
                       className="bg-green-600 hover:bg-green-700"
                       size="sm"
                     >
@@ -203,7 +215,7 @@ export default function AdminListingsPage() {
                     </Button>
                     <Button
                       onClick={() => handleReject(listing.id)}
-                      loading={rejectMutation.isPending}
+                      loading={rejectingId === listing.id}
                       variant="danger"
                       size="sm"
                     >

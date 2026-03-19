@@ -43,6 +43,8 @@ export default function AdminMarketplaceAdsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>('pending');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
   const isAuthed = status === 'authenticated' && Boolean(accessToken);
 
   const { data: pending, isLoading: pendingLoading, refetch: refetchPending } = usePendingMarketplaceAds({ enabled: isAuthed });
@@ -73,17 +75,27 @@ export default function AdminMarketplaceAdsPage() {
   }
 
   const handleApprove = async (id: string) => {
-    await approveMutation.mutateAsync({ adId: id, adminUserId });
-    await refetchPending();
-    await refetchPublished();
+    try {
+      setApprovingId(id);
+      await approveMutation.mutateAsync({ adId: id, adminUserId });
+      await refetchPending();
+      await refetchPublished();
+    } finally {
+      setApprovingId(null);
+    }
   };
 
   const handleReject = async (id: string) => {
     const reason = prompt('Rejection reason (required):') || '';
     if (!reason.trim()) return;
-    await rejectMutation.mutateAsync({ adId: id, reason, adminUserId });
-    await refetchPending();
-    await refetchRejected();
+    try {
+      setRejectingId(id);
+      await rejectMutation.mutateAsync({ adId: id, reason, adminUserId });
+      await refetchPending();
+      await refetchRejected();
+    } finally {
+      setRejectingId(null);
+    }
   };
 
   const toggleExpanded = (id: string) => {
@@ -234,7 +246,7 @@ export default function AdminMarketplaceAdsPage() {
                     <div className="flex flex-row gap-2">
                       <Button
                         onClick={() => handleApprove(ad.id)}
-                        loading={approveMutation.isPending}
+                        loading={approvingId === ad.id}
                         className="bg-green-600 hover:bg-green-700"
                         size="sm"
                       >
@@ -243,7 +255,7 @@ export default function AdminMarketplaceAdsPage() {
                       </Button>
                       <Button
                         onClick={() => handleReject(ad.id)}
-                        loading={rejectMutation.isPending}
+                        loading={rejectingId === ad.id}
                         variant="danger"
                         size="sm"
                       >
