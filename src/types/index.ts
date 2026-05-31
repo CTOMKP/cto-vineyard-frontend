@@ -147,6 +147,56 @@ export interface Payment {
   };
 }
 
+export interface CreatorPayoutCreatorUser {
+  id: number;
+  email: string;
+  name?: string | null;
+  role?: string | null;
+  createdAt: string;
+}
+
+export interface CreatorPayoutCreatorAccount {
+  id: string;
+  referralCode: string;
+  tier: string;
+  pendingBalance: number;
+  reservedBalance: number;
+  paidBalance: number;
+  payoutWalletAddress?: string | null;
+  fraudStatus?: string | null;
+}
+
+export interface CreatorPayout {
+  id: string;
+  creatorAccountId: string;
+  creatorUserId: number;
+  walletAddress: string;
+  amountRequested: number;
+  amountApproved?: number | null;
+  status: 'REQUESTED' | 'APPROVED' | 'PROCESSING' | 'PAID' | 'REJECTED' | 'ON_HOLD';
+  txHash?: string | null;
+  requestNote?: string | null;
+  reviewedBy?: number | null;
+  reviewedAt?: string | null;
+  processedAt?: string | null;
+  rejectedAt?: string | null;
+  failureReason?: string | null;
+  metadata?: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
+  creatorUser?: CreatorPayoutCreatorUser;
+  creatorAccount?: CreatorPayoutCreatorAccount;
+}
+
+export interface CreatorPayoutsResponse {
+  success?: boolean;
+  payouts: CreatorPayout[];
+  total: number;
+  limit: number;
+  offset: number;
+  message?: string;
+}
+
 export interface AdBoost {
   id: string;
   listingId: string;

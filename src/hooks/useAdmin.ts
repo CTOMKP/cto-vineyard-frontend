@@ -20,6 +20,7 @@ export const adminKeys = {
   rejectedMarketplaceAds: ['admin', 'marketplace-ads', 'rejected'] as const,
   users: ['admin', 'users'] as const,
   payments: ['admin', 'payments'] as const,
+  creatorPayouts: ['admin', 'creator-payouts'] as const,
   boosts: ['admin', 'boosts'] as const,
   escrows: ['admin', 'escrows'] as const,
   notifications: ['admin', 'notifications'] as const,
@@ -172,6 +173,72 @@ export function usePayments(filters?: { status?: string; limit?: number }, optio
     queryFn: () => api.getPayments(filters),
     staleTime: 30_000,
     enabled: options?.enabled,
+  });
+}
+
+export function useCreatorPayouts(
+  filters?: { status?: string; limit?: number; offset?: number },
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: [...adminKeys.creatorPayouts, filters],
+    queryFn: () => api.getCreatorPayouts(filters),
+    staleTime: 15_000,
+    enabled: options?.enabled,
+  });
+}
+
+export function useApproveCreatorPayout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { payoutId: string; adminUserId: string; note?: string }) =>
+      api.approveCreatorPayout(payload.payoutId, payload.adminUserId, payload.note),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.creatorPayouts });
+      queryClient.invalidateQueries({ queryKey: adminKeys.notifications });
+      queryClient.invalidateQueries({ queryKey: adminKeys.stats });
+      toast.success('Creator payout approved');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to approve creator payout');
+    },
+  });
+}
+
+export function useRejectCreatorPayout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { payoutId: string; adminUserId: string; reason: string }) =>
+      api.rejectCreatorPayout(payload.payoutId, payload.adminUserId, payload.reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.creatorPayouts });
+      queryClient.invalidateQueries({ queryKey: adminKeys.notifications });
+      queryClient.invalidateQueries({ queryKey: adminKeys.stats });
+      toast.success('Creator payout rejected');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to reject creator payout');
+    },
+  });
+}
+
+export function useMarkCreatorPayoutPaid() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { payoutId: string; adminUserId: string; txHash: string; note?: string }) =>
+      api.markCreatorPayoutPaid(payload.payoutId, payload.adminUserId, payload.txHash, payload.note),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: adminKeys.creatorPayouts });
+      queryClient.invalidateQueries({ queryKey: adminKeys.notifications });
+      queryClient.invalidateQueries({ queryKey: adminKeys.stats });
+      toast.success('Creator payout marked paid');
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Failed to mark creator payout paid');
+    },
   });
 }
 

@@ -15,6 +15,7 @@ import {
   Scale,
   Bell,
   CheckCheck,
+  Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useAdminNotifications, useMarkAdminNotificationRead } from '@/hooks/useAdmin';
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/admin/listings', label: 'User Listings', icon: ClipboardList },
   { href: '/admin/marketplace-ads', label: 'Marketplace Ads', icon: Megaphone },
   { href: '/admin/escrows', label: 'Escrows', icon: Scale },
+  { href: '/admin/creator-payouts', label: 'Creator Payouts', icon: Wallet },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/payments', label: 'Payments', icon: CreditCard },
   { href: '/admin/boosts', label: 'Boosts', icon: Rocket },
@@ -52,6 +54,11 @@ function formatTimeAgo(dateIso: string) {
 }
 
 function getNotificationRoute(notification: NotificationItem) {
+  const route = notification.data?.route;
+  if (typeof route === 'string' && route.startsWith('/admin')) {
+    return route;
+  }
+
   switch (notification.type) {
     case 'ESCROW':
       return '/admin/escrows';
@@ -129,7 +136,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[#0B0B0B]">
-      <div className="mx-auto flex max-w-7xl gap-6 p-6">
+      <div className="mx-auto flex max-w-7xl gap-4 p-4 sm:gap-6 sm:p-6">
         <aside className="hidden w-64 shrink-0 rounded-2xl border border-white/10 bg-[#0E0E0E] p-4 md:block">
           <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#111111] px-3 py-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#FF0075] via-[#FF4A15] to-[#FFCB45] text-black">
@@ -167,7 +174,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </div>
         </aside>
 
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <div className="mb-4 flex justify-end">
             <div className="relative" ref={notificationsPanelRef}>
               <button
@@ -238,14 +245,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <div className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#0E0E0E] px-4 py-3 md:hidden">
-            <div className="text-sm font-semibold">Admin Console</div>
-            <div className="flex flex-wrap gap-2">
+          <div className="mb-6 rounded-2xl border border-white/10 bg-[#0E0E0E] px-4 py-3 md:hidden">
+            <div className="mb-3 text-sm font-semibold">Admin Console</div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {navItems.map((item) => (
                 <Link key={item.href} href={item.href}>
                   <Button
                     size="sm"
                     variant={pathname === item.href ? 'secondary' : 'ghost'}
+                    className="whitespace-nowrap"
                   >
                     {item.label}
                   </Button>

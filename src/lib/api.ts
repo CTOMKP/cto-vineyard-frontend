@@ -17,6 +17,7 @@ import type {
   MarketplaceAd,
   Escrow,
   NotificationItem,
+  CreatorPayoutsResponse,
 } from '@/types';
 
 class ApiClient {
@@ -268,6 +269,40 @@ class ApiClient {
     const query = params.toString() ? `?${params.toString()}` : '';
     const data = await this.request<{ payments: Payment[] }>(`/api/v1/admin/payments${query}`);
     return data.payments || [];
+  }
+
+  /**
+   * Get creator payout requests
+   */
+  async getCreatorPayouts(filters?: { status?: string; limit?: number; offset?: number }): Promise<CreatorPayoutsResponse> {
+    const params = new URLSearchParams();
+    if (filters?.status) params.set('status', filters.status);
+    if (filters?.limit) params.set('limit', String(filters.limit));
+    if (filters?.offset) params.set('offset', String(filters.offset));
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.request<CreatorPayoutsResponse>(`/api/v1/admin/creator-payouts${query}`);
+  }
+
+  async approveCreatorPayout(payoutId: string, adminUserId: string, note?: string) {
+    return this.request('/api/v1/admin/creator-payouts/approve', {
+      method: 'POST',
+      body: JSON.stringify({ payoutId, adminUserId, note }),
+    });
+  }
+
+  async rejectCreatorPayout(payoutId: string, adminUserId: string, reason: string) {
+    return this.request('/api/v1/admin/creator-payouts/reject', {
+      method: 'POST',
+      body: JSON.stringify({ payoutId, adminUserId, reason }),
+    });
+  }
+
+  async markCreatorPayoutPaid(payoutId: string, adminUserId: string, txHash: string, note?: string) {
+    return this.request('/api/v1/admin/creator-payouts/paid', {
+      method: 'POST',
+      body: JSON.stringify({ payoutId, adminUserId, txHash, note }),
+    });
   }
 
   /**

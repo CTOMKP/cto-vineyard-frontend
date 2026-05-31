@@ -3,8 +3,8 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FileText, DollarSign, Zap, Users, RefreshCw } from 'lucide-react';
-import { useAdminStats } from '@/hooks/useAdmin';
+import { FileText, DollarSign, Zap, Users, RefreshCw, Wallet } from 'lucide-react';
+import { useAdminStats, useCreatorPayouts } from '@/hooks/useAdmin';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -16,6 +16,14 @@ export default function AdminPage() {
   const router = useRouter();
   const isAuthed = status === 'authenticated' && Boolean(accessToken);
   const { data: stats, isLoading, refetch } = useAdminStats({ enabled: isAuthed });
+  const { data: creatorPayouts } = useCreatorPayouts(
+    { status: 'REQUESTED', limit: 100 },
+    { enabled: isAuthed }
+  );
+
+  const pendingCreatorPayouts = creatorPayouts?.total || 0;
+  const pendingCreatorPayoutAmount =
+    creatorPayouts?.payouts?.reduce((sum, payout) => sum + (payout.amountRequested || 0), 0) || 0;
 
   if (status === 'unauthenticated') {
     router.push('/signin');
@@ -40,7 +48,7 @@ export default function AdminPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         <Link href="/admin/listings">
           <Card hover className="p-6">
             <FileText className="w-8 h-8 mb-3 text-yellow-500" />
@@ -67,6 +75,19 @@ export default function AdminPage() {
             <h3 className="font-semibold text-lg">Active Boosts</h3>
             <p className="text-2xl font-bold text-orange-500 mt-2">
               {stats?.adBoosts.active || 0}
+            </p>
+          </Card>
+        </Link>
+
+        <Link href="/admin/creator-payouts">
+          <Card hover className="p-6">
+            <Wallet className="w-8 h-8 mb-3 text-cyan-400" />
+            <h3 className="font-semibold text-lg">Creator Payouts</h3>
+            <p className="text-2xl font-bold text-cyan-400 mt-2">
+              {pendingCreatorPayouts}
+            </p>
+            <p className="text-xs text-white/50 mt-2">
+              ${pendingCreatorPayoutAmount.toFixed(2)} pending
             </p>
           </Card>
         </Link>
@@ -124,7 +145,7 @@ export default function AdminPage() {
 
       <Card className="p-6">
         <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Button onClick={() => refetch()} variant="secondary" className="justify-center">
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh Data
@@ -137,6 +158,11 @@ export default function AdminPage() {
           <Link href="/admin/payments">
             <Button variant="secondary" className="w-full justify-center">
               View Payments
+            </Button>
+          </Link>
+          <Link href="/admin/creator-payouts">
+            <Button variant="secondary" className="w-full justify-center">
+              View Creator Payouts
             </Button>
           </Link>
         </div>
