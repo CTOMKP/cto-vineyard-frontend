@@ -126,32 +126,35 @@ export default function AdminListingsPage() {
       ) : (
         <div className="space-y-4">
           {visibleListings.map((listing) => (
-            <Card key={listing.id} className="p-6">
+            <Card key={listing.id} className="overflow-hidden p-6">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex-1 min-w-0 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-xl font-bold text-white">{listing.title}</h3>
+                <div className="min-w-0 flex-1 space-y-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <h3 className="max-w-full break-words text-xl font-bold leading-tight text-white">
+                      {listing.title}
+                    </h3>
                     <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">
                       {listing.status}
                     </span>
                   </div>
                   {listing.description && (
-                    <p className="text-white/80">{listing.description}</p>
+                    <p className="break-words text-white/80">{listing.description}</p>
                   )}
                   {listing.bio && (
-                    <p className="text-white/60 text-sm">{listing.bio}</p>
+                    <p className="break-words text-sm text-white/60">{listing.bio}</p>
                   )}
                   <div className="grid gap-2 text-sm text-white/60">
-                    <div>
+                    <div className="min-w-0">
                       <span className="font-medium text-white/70">Contract:</span>{' '}
                       <code className="bg-[#262626] px-2 py-1 rounded text-xs break-all">
                         {listing.contractAddr}
                       </code>
                     </div>
-                    <div>
-                      <span className="font-medium text-white/70">Submitted by:</span> {listing.user?.email}
+                    <div className="min-w-0">
+                      <span className="font-medium text-white/70">Submitted by:</span>{' '}
+                      <span className="break-all">{listing.user?.email || '--'}</span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="font-medium text-white/70">Date:</span>{' '}
                       {new Date(listing.createdAt).toLocaleString()}
                     </div>
@@ -203,7 +206,7 @@ export default function AdminListingsPage() {
                 </div>
 
                 {activeTab === 'pending' && (
-                  <div className="flex flex-row gap-2">
+                  <div className="flex flex-row gap-2 lg:shrink-0">
                     <Button
                       onClick={() => handleApprove(listing.id)}
                       loading={approvingId === listing.id}
@@ -226,14 +229,14 @@ export default function AdminListingsPage() {
                 )}
 
                 {activeTab === 'published' && (
-                  <div className="flex items-center gap-2 text-emerald-400 text-sm">
+                  <div className="flex items-center gap-2 text-sm text-emerald-400 lg:shrink-0">
                     <BadgeCheck className="w-4 h-4" />
                     Approved
                   </div>
                 )}
 
                 {activeTab === 'rejected' && (
-                  <div className="flex items-center gap-2 text-rose-400 text-sm">
+                  <div className="flex items-center gap-2 text-sm text-rose-400 lg:shrink-0">
                     <Ban className="w-4 h-4" />
                     Rejected
                   </div>

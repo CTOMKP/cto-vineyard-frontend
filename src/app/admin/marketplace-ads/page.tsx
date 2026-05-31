@@ -152,11 +152,13 @@ export default function AdminMarketplaceAdsPage() {
           {visibleAds.map((ad) => {
             const isExpanded = expandedId === ad.id;
             return (
-              <Card key={ad.id} className="p-6">
+            <Card key={ad.id} className="overflow-hidden p-6">
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="flex-1 min-w-0 space-y-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="text-xl font-bold text-white">{ad.title}</h3>
+                  <div className="min-w-0 flex-1 space-y-3">
+                    <div className="flex min-w-0 flex-wrap items-center gap-3">
+                      <h3 className="max-w-full break-words text-xl font-bold leading-tight text-white">
+                        {ad.title}
+                      </h3>
                       <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/60">
                         {ad.status}
                       </span>
@@ -164,20 +166,21 @@ export default function AdminMarketplaceAdsPage() {
                         {ad.tier}
                       </span>
                     </div>
-                    <p className="text-white/80">{ad.description}</p>
+                    <p className="break-words text-white/80">{ad.description}</p>
 
                     <div className="grid gap-2 text-sm text-white/60">
-                      <div>
+                      <div className="min-w-0">
                         <span className="font-medium text-white/70">Category:</span> {ad.category}
                         {ad.subCategory ? ` / ${ad.subCategory}` : ''}
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <span className="font-medium text-white/70">Post type:</span> {ad.postType || 'LOOKING_FOR'}
                       </div>
-                      <div>
-                        <span className="font-medium text-white/70">Submitted by:</span> {ad.user?.email || '--'}
+                      <div className="min-w-0">
+                        <span className="font-medium text-white/70">Submitted by:</span>{' '}
+                        <span className="break-all">{ad.user?.email || '--'}</span>
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <span className="font-medium text-white/70">Created:</span>{' '}
                         {new Date(ad.createdAt).toLocaleString()}
                       </div>
@@ -188,7 +191,7 @@ export default function AdminMarketplaceAdsPage() {
                         </div>
                       )}
                       {ad.priceAmount && (
-                        <div>
+                        <div className="min-w-0">
                           <span className="font-medium text-white/70">Offer amount:</span>{' '}
                           {ad.priceAmount} {ad.priceCurrency || 'USDC'}
                         </div>
@@ -243,7 +246,7 @@ export default function AdminMarketplaceAdsPage() {
                   </div>
 
                   {activeTab === 'pending' && (
-                    <div className="flex flex-row gap-2">
+                    <div className="flex flex-row gap-2 lg:shrink-0">
                       <Button
                         onClick={() => handleApprove(ad.id)}
                         loading={approvingId === ad.id}
@@ -266,14 +269,14 @@ export default function AdminMarketplaceAdsPage() {
                   )}
 
                   {activeTab === 'published' && (
-                    <div className="flex items-center gap-2 text-emerald-400 text-sm">
+                    <div className="flex items-center gap-2 text-sm text-emerald-400 lg:shrink-0">
                       <BadgeCheck className="w-4 h-4" />
                       Approved
                     </div>
                   )}
 
                   {activeTab === 'rejected' && (
-                    <div className="flex items-center gap-2 text-rose-400 text-sm">
+                    <div className="flex items-center gap-2 text-sm text-rose-400 lg:shrink-0">
                       <Ban className="w-4 h-4" />
                       Rejected
                     </div>

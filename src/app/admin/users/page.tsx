@@ -77,31 +77,31 @@ export default function AdminUsersPage() {
           {visibleUsers.map((user) => {
             const displayName = user.name || (user.email ? user.email.split('@')[0] : 'Unnamed user');
             return (
-            <Card key={user.id} className="p-6">
+            <Card key={user.id} className="overflow-hidden p-6">
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <p className="text-lg font-semibold text-white">{displayName}</p>
-                    <p className="text-sm text-white/60">{user.email}</p>
+                  <div className="min-w-0">
+                    <p className="break-words text-lg font-semibold text-white">{displayName}</p>
+                    <p className="break-all text-sm text-white/60">{user.email}</p>
                     {user.privyDid && (
-                      <p className="text-xs text-white/40 mt-1">Privy: {user.privyDid}</p>
+                      <p className="mt-1 break-all text-xs text-white/40">Privy: {user.privyDid}</p>
                     )}
-                    <p className="text-xs text-white/40 mt-1">
-                      Joined {new Date(user.createdAt).toLocaleDateString()} ? Last login{' '}
+                    <p className="mt-1 text-xs text-white/40">
+                      Joined {new Date(user.createdAt).toLocaleDateString()} · Last login{' '}
                       {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
-                  <div className="grid gap-2 text-sm text-white/60">
-                    <div>
+                  <div className="grid gap-2 text-sm text-white/60 lg:shrink-0">
+                    <div className="min-w-0">
                       Role: <span className="text-white">{user.role || 'USER'}</span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       Wallets: <span className="text-white">{user._count?.wallets ?? user.wallets.length}</span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       Listings: <span className="text-white">{user._count?.userListings ?? 0}</span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       Payments: <span className="text-white">{user._count?.payments ?? 0}</span>
                     </div>
                   </div>
@@ -109,7 +109,7 @@ export default function AdminUsersPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   {user.wallets.map((wallet) => (
-                    <div key={wallet.id} className="rounded-xl border border-white/10 bg-[#0B0B0B] p-4">
+                    <div key={wallet.id} className="overflow-hidden rounded-xl border border-white/10 bg-[#0B0B0B] p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2 text-sm text-white/70">
                           <Wallet className="w-4 h-4" />
@@ -121,15 +121,15 @@ export default function AdminUsersPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-white/50 break-all">{wallet.address || 'No address'}</p>
+                      <p className="break-all text-xs text-white/50">{wallet.address || 'No address'}</p>
                       <div className="mt-3">
                         <p className="text-xs uppercase tracking-[0.2em] text-white/40">Balances</p>
                         {wallet.walletBalances.length ? (
                           <div className="mt-2 space-y-1 text-xs text-white/60">
                             {wallet.walletBalances.slice(0, 3).map((balance) => (
-                              <div key={balance.tokenAddress} className="flex justify-between">
+                              <div key={balance.tokenAddress} className="flex min-w-0 justify-between gap-2">
                                 <span>{balance.tokenSymbol}</span>
-                                <span>{balance.balance}</span>
+                                <span className="break-all text-right">{balance.balance}</span>
                               </div>
                             ))}
                           </div>
@@ -145,9 +145,9 @@ export default function AdminUsersPage() {
                         {wallet.walletTransactions.length ? (
                           <div className="mt-2 space-y-1 text-xs text-white/60">
                             {wallet.walletTransactions.slice(0, 3).map((tx) => (
-                              <div key={tx.txHash} className="flex justify-between">
+                              <div key={tx.txHash} className="flex min-w-0 justify-between gap-2">
                                 <span>{tx.txType}</span>
-                                <span>{tx.amount} {tx.tokenSymbol}</span>
+                                <span className="break-all text-right">{tx.amount} {tx.tokenSymbol}</span>
                               </div>
                             ))}
                           </div>
